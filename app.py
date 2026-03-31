@@ -82,8 +82,6 @@ def read_sql_query(sql, db, params=None):
     rows = cursor.fetchall()
     conn.commit()
     conn.close()
-    for row in rows:
-        print(row)
     return rows
 
 
