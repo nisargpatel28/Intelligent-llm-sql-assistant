@@ -68,3 +68,40 @@ class ExternalConversationTool:
                 "error": str(e),
                 "context": []
             }
+
+class ExternalPredictionTool:
+    """Tool for external query prediction"""
+
+    def __init__(self, api_endpoint: Optional[str] = None):
+        self.api_endpoint = api_endpoint or "https://api.example.com/prediction"
+        self.session = requests.Session()
+
+    def get_suggestions(self, user_id: str, current_query: str, context: Dict) -> Dict:
+        """Get query suggestions from external service"""
+        try:
+            payload = {
+                "user_id": user_id,
+                "current_query": current_query,
+                "context": context,
+                "timestamp": datetime.now().isoformat()
+            }
+
+            response = self.session.post(
+                f"{self.api_endpoint}/suggest", json=payload, timeout=15)
+            response.raise_for_status()
+
+            result = response.json()
+
+            return {
+                "success": True,
+                "suggestions": result.get("suggestions", []),
+                "tool": "external_prediction"
+            }
+
+        except Exception as e:
+            logger.error(f"External prediction tool error: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "suggestions": []
+            }
