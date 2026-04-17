@@ -105,3 +105,10 @@ class ExternalPredictionTool:
                 "error": str(e),
                 "suggestions": []
             }
+
+class ExternalAnomalyTool:
+    """Tool for external anomaly detection"""
+
+    def __init__(self, api_endpoint: Optional[str] = None):
+        self.api_endpoint = api_endpoint or "https://api.example.com/anomaly"
+        self.session = requests.Session()
