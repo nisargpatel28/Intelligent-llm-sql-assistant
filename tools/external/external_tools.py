@@ -112,3 +112,33 @@ class ExternalAnomalyTool:
     def __init__(self, api_endpoint: Optional[str] = None):
         self.api_endpoint = api_endpoint or "https://api.example.com/anomaly"
         self.session = requests.Session()
+
+    def detect_anomalies(self, data: List[Dict], threshold: float = 0.95) -> Dict:
+        """Detect anomalies using external service"""
+        try:
+            payload = {
+                "data": data,
+                "threshold": threshold,
+                "timestamp": datetime.now().isoformat()
+            }
+
+            response = self.session.post(
+                f"{self.api_endpoint}/detect", json=payload, timeout=30)
+            response.raise_for_status()
+
+            result = response.json()
+
+            return {
+                "success": True,
+                "anomalies": result.get("anomalies", []),
+                "stats": result.get("stats", {}),
+                "tool": "external_anomaly"
+            }
+
+        except Exception as e:
+            logger.error(f"External anomaly tool error: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "anomalies": []
+            }
