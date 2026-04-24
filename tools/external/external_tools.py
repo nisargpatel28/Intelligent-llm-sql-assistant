@@ -190,3 +190,43 @@ class ExternalToolsManager:
         self.anomaly_tool = ExternalAnomalyTool()
         self.report_tool = ExternalReportTool()
         self.executor = ThreadPoolExecutor(max_workers=4)
+
+    async def call_tool(self, tool_name: str, **kwargs) -> Dict:
+        """Call an external tool asynchronously"""
+        loop = asyncio.get_event_loop()
+
+        if tool_name == "conversation_add":
+            return await loop.run_in_executor(
+                self.executor,
+                lambda: self.conversation_tool.add_message(**kwargs)
+            )
+
+        elif tool_name == "conversation_get":
+            return await loop.run_in_executor(
+                self.executor,
+                lambda: self.conversation_tool.get_context(**kwargs)
+            )
+
+        elif tool_name == "prediction_suggest":
+            return await loop.run_in_executor(
+                self.executor,
+                lambda: self.prediction_tool.get_suggestions(**kwargs)
+            )
+
+        elif tool_name == "anomaly_detect":
+            return await loop.run_in_executor(
+                self.executor,
+                lambda: self.anomaly_tool.detect_anomalies(**kwargs)
+            )
+
+        elif tool_name == "report_generate":
+            return await loop.run_in_executor(
+                self.executor,
+                lambda: self.report_tool.generate_report(**kwargs)
+            )
+
+        else:
+            return {
+                "success": False,
+                "error": f"Unknown tool: {tool_name}"
+            }
