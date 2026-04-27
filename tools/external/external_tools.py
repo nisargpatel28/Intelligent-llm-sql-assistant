@@ -250,3 +250,18 @@ class ExternalToolsManager:
             "anomaly_tool": True,
             "report_tool": True
         }
+
+    def configure_endpoints(self, endpoints: Dict[str, str]):
+        """Configure API endpoints for tools"""
+        if "conversation" in endpoints:
+            self.conversation_tool.api_endpoint = endpoints["conversation"]
+        if "prediction" in endpoints:
+            self.prediction_tool.api_endpoint = endpoints["prediction"]
+        if "anomaly" in endpoints:
+            self.anomaly_tool.api_endpoint = endpoints["anomaly"]
+        if "report" in endpoints:
+            self.report_tool.api_endpoint = endpoints["report"]
+
+
+# Global instance
+external_tools_manager = ExternalToolsManager()
