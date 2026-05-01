@@ -115,3 +115,59 @@ class AnomalyDetector:
             window=10, min_periods=1).std()
 
         return processed
+
+    def _detect_statistical_anomalies(self, df: pd.DataFrame, threshold: float) -> List[Dict]:
+        """Detect anomalies using statistical methods"""
+        anomalies = []
+
+        if len(df) < 3:
+            return anomalies
+
+        amounts = df['amount'].values
+
+        try:
+            # Z-score method
+            mean_amount = np.mean(amounts)
+            std_amount = np.std(amounts)
+
+            if std_amount > 0:
+                z_scores = np.abs((amounts - mean_amount) / std_amount)
+                z_threshold = self._get_z_threshold(threshold)
+
+                for idx, z_score in enumerate(z_scores):
+                    if z_score > z_threshold:
+                        anomalies.append({
+                            "index": int(idx),
+                            "transaction_id": df.iloc[idx].get('transaction_id', f"tx_{idx}"),
+                            "amount": float(df.iloc[idx]['amount']),
+                            "date": str(df.iloc[idx].get('date', '')),
+                            "method": "z_score",
+                            "score": float(z_score),
+                            "reason": f"Z-score {z_score:.2f} exceeds threshold {z_threshold:.2f}"
+                        })
+
+            # IQR method
+            q1 = np.percentile(amounts, 25)
+            q3 = np.percentile(amounts, 75)
+            iqr = q3 - q1
+            iqr_threshold = self._get_iqr_multiplier(threshold)
+
+            lower_bound = q1 - (iqr_threshold * iqr)
+            upper_bound = q3 + (iqr_threshold * iqr)
+
+            for idx, amount in enumerate(amounts):
+                if amount < lower_bound or amount > upper_bound:
+                    anomalies.append({
+                        "index": int(idx),
+                        "transaction_id": df.iloc[idx].get('transaction_id', f"tx_{idx}"),
+                        "amount": float(amount),
+                        "date": str(df.iloc[idx].get('date', '')),
+                        "method": "iqr",
+                        "bounds": [float(lower_bound), float(upper_bound)],
+                        "reason": f"Amount {amount:.2f} outside IQR bounds [{lower_bound:.2f}, {upper_bound:.2f}]"
+                    })
+
+        except Exception as e:
+            print(f"Error in statistical anomaly detection: {e}")
+
+        return anomalies
