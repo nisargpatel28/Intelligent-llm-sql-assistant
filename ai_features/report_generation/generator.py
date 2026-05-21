@@ -43,3 +43,45 @@ class ReportGenerator:
                 "charts": ["trends_over_time", "weekly_patterns", "monthly_comparison"]
             }
         }
+
+    def generate_report(self, report_type: str, data: List[Dict], filters: Optional[Dict] = None) -> Dict:
+        """
+        Generate a comprehensive report from transaction data
+
+        Args:
+            report_type: Type of report ('summary', 'detailed', 'trends')
+            data: Transaction data
+            filters: Optional filters to apply
+
+        Returns:
+            Dictionary containing report data, insights, and visualizations
+        """
+        if not data:
+            return {"error": "No data provided for report generation"}
+
+        try:
+            # Convert to DataFrame
+            df = pd.DataFrame(data)
+
+            # Apply filters if provided
+            if filters:
+                df = self._apply_filters(df, filters)
+
+            if df.empty:
+                return {"error": "No data remains after applying filters"}
+
+            # Preprocess data
+            df = self._preprocess_data(df)
+
+            # Generate report based on type
+            if report_type == "summary":
+                return self._generate_summary_report(df)
+            elif report_type == "detailed":
+                return self._generate_detailed_report(df)
+            elif report_type == "trends":
+                return self._generate_trends_report(df)
+            else:
+                return {"error": f"Unknown report type: {report_type}"}
+
+        except Exception as e:
+            return {"error": str(e)}
