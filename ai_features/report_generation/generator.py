@@ -85,3 +85,34 @@ class ReportGenerator:
 
         except Exception as e:
             return {"error": str(e)}
+
+    def _apply_filters(self, df: pd.DataFrame, filters: Dict) -> pd.DataFrame:
+        """Apply filters to the dataframe"""
+        filtered_df = df.copy()
+
+        # Date range filter
+        if 'date_from' in filters:
+            filtered_df = filtered_df[filtered_df['date']
+                                      >= filters['date_from']]
+        if 'date_to' in filters:
+            filtered_df = filtered_df[filtered_df['date']
+                                      <= filters['date_to']]
+
+        # Amount range filter
+        if 'amount_min' in filters:
+            filtered_df = filtered_df[filtered_df['amount']
+                                      >= filters['amount_min']]
+        if 'amount_max' in filters:
+            filtered_df = filtered_df[filtered_df['amount']
+                                      <= filters['amount_max']]
+
+        # Status filter
+        if 'status' in filters:
+            if isinstance(filters['status'], list):
+                filtered_df = filtered_df[filtered_df['status'].isin(
+                    filters['status'])]
+            else:
+                filtered_df = filtered_df[filtered_df['status']
+                                          == filters['status']]
+
+        return filtered_df
