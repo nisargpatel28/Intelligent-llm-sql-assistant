@@ -116,3 +116,21 @@ class ReportGenerator:
                                           == filters['status']]
 
         return filtered_df
+
+    def _preprocess_data(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Preprocess data for reporting"""
+        processed = df.copy()
+
+        # Convert date column
+        if 'date' in processed.columns:
+            processed['date'] = pd.to_datetime(
+                processed['date'], errors='coerce')
+            processed['month'] = processed['date'].dt.to_period('M')
+            processed['week'] = processed['date'].dt.to_period('W')
+            processed['day_of_week'] = processed['date'].dt.day_name()
+
+        # Convert amount to numeric
+        processed['amount'] = pd.to_numeric(
+            processed['amount'], errors='coerce')
+
+        return processed
