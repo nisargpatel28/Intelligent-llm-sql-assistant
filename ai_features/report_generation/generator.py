@@ -134,3 +134,38 @@ class ReportGenerator:
             processed['amount'], errors='coerce')
 
         return processed
+
+    def _generate_summary_report(self, df: pd.DataFrame) -> Dict:
+        """Generate a summary report"""
+        report = {
+            "title": "Transaction Summary Report",
+            "generated_at": datetime.now().isoformat(),
+            "period": self._get_date_range(df),
+            "sections": {}
+        }
+
+        # Overview section
+        report["sections"]["overview"] = {
+            "total_transactions": len(df),
+            "total_amount": float(df['amount'].sum()),
+            "average_amount": float(df['amount'].mean()),
+            "unique_statuses": df['status'].value_counts().to_dict() if 'status' in df.columns else {}
+        }
+
+        # Trends section
+        if 'date' in df.columns:
+            daily_totals = df.groupby(df['date'].dt.date)['amount'].sum()
+            report["sections"]["trends"] = {
+                "daily_average": float(daily_totals.mean()),
+                "peak_day": str(daily_totals.idxmax()),
+                "peak_amount": float(daily_totals.max())
+            }
+
+        # Insights section
+        report["sections"]["insights"] = self._generate_insights(df)
+
+        # Charts
+        report["charts"] = self._generate_charts(
+            df, ["amount_distribution", "status_pie"])
+
+        return report
