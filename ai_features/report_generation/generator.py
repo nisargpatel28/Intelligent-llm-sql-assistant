@@ -169,3 +169,40 @@ class ReportGenerator:
             df, ["amount_distribution", "status_pie"])
 
         return report
+
+    def _generate_detailed_report(self, df: pd.DataFrame) -> Dict:
+        """Generate a detailed analysis report"""
+        report = {
+            "title": "Detailed Transaction Analysis Report",
+            "generated_at": datetime.now().isoformat(),
+            "period": self._get_date_range(df),
+            "sections": {}
+        }
+
+        # Overview
+        report["sections"]["overview"] = self._generate_summary_report(df)[
+            "sections"]["overview"]
+
+        # Breakdown by status
+        if 'status' in df.columns:
+            status_breakdown = df.groupby('status').agg({
+                'amount': ['count', 'sum', 'mean', 'min', 'max']
+            }).round(2)
+            report["sections"]["breakdown"] = {
+                "by_status": status_breakdown.to_dict(),
+                "large_transactions": df.nlargest(10, 'amount')[['amount', 'status', 'date']].to_dict('records')
+            }
+
+        # Anomalies (simplified detection)
+        anomalies = self._detect_simple_anomalies(df)
+        report["sections"]["anomalies"] = anomalies
+
+        # Recommendations
+        report["sections"]["recommendations"] = self._generate_recommendations(
+            df, anomalies)
+
+        # Charts
+        report["charts"] = self._generate_charts(
+            df, ["time_series", "amount_distribution", "status_breakdown"])
+
+        return report
