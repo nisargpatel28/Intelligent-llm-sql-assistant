@@ -206,3 +206,52 @@ class ReportGenerator:
             df, ["time_series", "amount_distribution", "status_breakdown"])
 
         return report
+
+    def _generate_trends_report(self, df: pd.DataFrame) -> Dict:
+        """Generate a trends analysis report"""
+        report = {
+            "title": "Transaction Trends Report",
+            "generated_at": datetime.now().isoformat(),
+            "period": self._get_date_range(df),
+            "sections": {}
+        }
+
+        if 'date' not in df.columns:
+            report["error"] = "Date column required for trends analysis"
+            return report
+
+        # Overview
+        report["sections"]["overview"] = {
+            "total_transactions": len(df),
+            "date_range": self._get_date_range(df),
+            "avg_daily_transactions": float(len(df) / max(1, (df['date'].max() - df['date'].min()).days))
+        }
+
+        # Temporal analysis
+        temporal = {}
+
+        # Monthly trends
+        monthly = df.groupby('month')['amount'].agg(['count', 'sum', 'mean'])
+        temporal["monthly"] = monthly.to_dict()
+
+        # Weekly patterns
+        weekly = df.groupby('day_of_week')['amount'].agg(
+            ['count', 'sum', 'mean'])
+        temporal["weekly"] = weekly.to_dict()
+
+        # Hourly patterns (if time data available)
+        if df['date'].dt.time.notna().any():
+            hourly = df.groupby(df['date'].dt.hour)[
+                'amount'].agg(['count', 'sum'])
+            temporal["hourly"] = hourly.to_dict()
+
+        report["sections"]["temporal_analysis"] = temporal
+
+        # Patterns
+        report["sections"]["patterns"] = self._analyze_patterns(df)
+
+        # Charts
+        report["charts"] = self._generate_charts(
+            df, ["trends_over_time", "weekly_patterns", "monthly_comparison"])
+
+        return report
