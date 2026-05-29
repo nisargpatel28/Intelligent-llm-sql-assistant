@@ -255,3 +255,33 @@ class ReportGenerator:
             df, ["trends_over_time", "weekly_patterns", "monthly_comparison"])
 
         return report
+
+    def _generate_insights(self, df: pd.DataFrame) -> List[str]:
+        """Generate AI-powered insights"""
+        insights = []
+
+        try:
+            # Basic statistical insights
+            total_amount = df['amount'].sum()
+            avg_amount = df['amount'].mean()
+            max_amount = df['amount'].max()
+
+            insights.append(f"Total transaction volume: ${total_amount:,.2f}")
+            insights.append(f"Average transaction amount: ${avg_amount:,.2f}")
+            insights.append(f"Largest transaction: ${max_amount:,.2f}")
+
+            if 'status' in df.columns:
+                status_counts = df['status'].value_counts()
+                most_common_status = status_counts.index[0]
+                insights.append(
+                    f"Most common transaction status: {most_common_status} ({status_counts[most_common_status]} transactions)")
+
+            # AI-powered insights if available
+            if GEMINI_AVAILABLE and len(df) > 10:
+                ai_insights = self._get_ai_insights(df)
+                insights.extend(ai_insights)
+
+        except Exception as e:
+            insights.append(f"Error generating insights: {str(e)}")
+
+        return insights
