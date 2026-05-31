@@ -285,3 +285,45 @@ class ReportGenerator:
             insights.append(f"Error generating insights: {str(e)}")
 
         return insights
+
+    def _get_ai_insights(self, df: pd.DataFrame) -> List[str]:
+        """Get AI-generated insights using Gemini"""
+        try:
+            # Prepare data summary for AI
+            summary = {
+                "total_transactions": len(df),
+                "total_amount": float(df['amount'].sum()),
+                "avg_amount": float(df['amount'].mean()),
+                "status_distribution": df['status'].value_counts().to_dict() if 'status' in df.columns else {},
+                "date_range": self._get_date_range(df)
+            }
+
+            prompt = f"""
+            Analyze this transaction data summary and provide 3-5 key business insights:
+
+            {json.dumps(summary, indent=2)}
+
+            Focus on:
+            - Transaction patterns
+            - Potential business implications
+            - Areas for improvement
+            - Risk indicators
+
+            Return only a JSON array of insight strings.
+            """
+
+            model = genai.GenerativeModel('gemini-pro')
+            response = model.generate_content(prompt)
+
+            response_text = response.text.strip()
+            if response_text.startswith('```json'):
+                response_text = response_text[7:]
+            if response_text.endswith('```'):
+                response_text = response_text[:-3]
+
+            insights = json.loads(response_text)
+            return insights if isinstance(insights, list) else []
+
+        except Exception as e:
+            print(f"Error getting AI insights: {e}")
+            return []
