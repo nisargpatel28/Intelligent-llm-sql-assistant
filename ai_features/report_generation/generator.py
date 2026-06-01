@@ -327,3 +327,36 @@ class ReportGenerator:
         except Exception as e:
             print(f"Error getting AI insights: {e}")
             return []
+
+    def _detect_simple_anomalies(self, df: pd.DataFrame) -> Dict:
+        """Simple anomaly detection for reports"""
+        anomalies = {"high_value": [], "unusual_patterns": []}
+
+        try:
+            # High value transactions (top 5%)
+            threshold = df['amount'].quantile(0.95)
+            high_value = df[df['amount'] >= threshold][[
+                'amount', 'status', 'date']].head(10)
+            anomalies["high_value"] = high_value.to_dict('records')
+
+            # Check for unusual status patterns
+            if 'status' in df.columns:
+                status_counts = df['status'].value_counts()
+                total = len(df)
+                unusual_statuses = []
+
+                for status, count in status_counts.items():
+                    percentage = (count / total) * 100
+                    if percentage < 1:  # Less than 1% of transactions
+                        unusual_statuses.append({
+                            "status": status,
+                            "count": int(count),
+                            "percentage": round(percentage, 2)
+                        })
+
+                anomalies["unusual_patterns"] = unusual_statuses
+
+        except Exception as e:
+            anomalies["error"] = str(e)
+
+        return anomalies
