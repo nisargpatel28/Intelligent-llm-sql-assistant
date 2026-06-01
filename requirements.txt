@@ -1,3 +1,11 @@
 streamlit
 google-generativeai
 python-dotenv
+langchain
+langchain-core
+langchain-google-genai
+chromadb
+faiss-cpu
+pydantic
+email-validator
+python-dotenv
