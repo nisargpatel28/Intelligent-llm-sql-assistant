@@ -360,3 +360,30 @@ class ReportGenerator:
             anomalies["error"] = str(e)
 
         return anomalies
+
+    def _generate_recommendations(self, df: pd.DataFrame, anomalies: Dict) -> List[str]:
+        """Generate recommendations based on data analysis"""
+        recommendations = []
+
+        try:
+            # Basic recommendations
+            if len(anomalies.get("high_value", [])) > 0:
+                recommendations.append(
+                    "Monitor high-value transactions for fraud prevention")
+
+            if 'status' in df.columns:
+                failed_count = len(df[df['status'] == 'Failed'])
+                if failed_count > len(df) * 0.1:  # More than 10% failed
+                    recommendations.append(
+                        "Investigate high failure rate in transactions")
+
+            # AI-powered recommendations
+            if GEMINI_AVAILABLE:
+                ai_recs = self._get_ai_recommendations(df, anomalies)
+                recommendations.extend(ai_recs)
+
+        except Exception as e:
+            recommendations.append(
+                f"Error generating recommendations: {str(e)}")
+
+        return recommendations
