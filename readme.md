@@ -2,7 +2,7 @@
 
 This repository accompanies a tutorial on building an AI-powered chatbot that integrates RAG (Retrieval-Augmented Generation), LangChain, and **Agentic AI** to interact with financial data securely and intelligently.
 
-The chatbot features **two intelligent modes:**
+The chatbot features **three intelligent modes:**
 
 ### 📊 Mode 1: Financial Data Query Assistant
 Connects with your organization's transactional database to answer natural language queries:
@@ -26,6 +26,17 @@ Intelligently routes customer issues to support team with automatic ticket creat
 
 🆔 "What's my KYC verification status?" → Routes to KYC Support (HIGH PRIORITY)
 
+### 🤖 Mode 3: Advanced AI Features (NEW)
+Cutting-edge AI capabilities for enhanced financial data analysis:
+
+💬 **Multi-turn Conversations**: Maintain context across multiple interactions for natural, conversational experiences.
+
+🔮 **Predictive Query Suggestions**: Intelligent query recommendations based on user history and patterns.
+
+🔍 **Anomaly Detection**: Advanced algorithms to identify unusual transaction patterns and potential fraud.
+
+📊 **Automated Report Generation**: AI-powered report creation with insights, visualizations, and actionable recommendations.
+
 🚀 Key Features
 
 **AI-Powered Query Engine**: Uses LangChain and RAG pipelines to interpret natural language and fetch accurate responses from structured financial databases.
@@ -35,6 +46,13 @@ Intelligently routes customer issues to support team with automatic ticket creat
 - Vector Database (ChromaDB + FAISS)
 - Retrieval-Augmented Generation (RAG)
 - Automated email notifications
+
+**Advanced AI Capabilities** ⭐ NEW: State-of-the-art AI features including:
+- Context-aware conversation management
+- Machine learning-based anomaly detection
+- Predictive analytics and suggestions
+- Automated report generation with visualizations
+- MCP (Model Context Protocol) integration for external services
 
 **FinTech Use Cases**: Ideal for banks, payment gateways, and financial platforms to provide intelligent self-service analytics, transaction insights, and automated customer support.
 
@@ -158,6 +176,12 @@ streamlit run app.py
 - Tickets created and routed to support team
 - Email confirmations sent automatically
 
+**Tab 3: 🤖 AI Features** ⭐ NEW
+- **Multi-turn Conversations**: Context-aware chat with history retention
+- **Query Suggestions**: Predictive recommendations based on your patterns
+- **Anomaly Detection**: ML-powered identification of unusual transactions
+- **Automated Reports**: AI-generated insights with visualizations
+
 ### Example Queries
 
 ✅ **Will be routed to Support:**
@@ -171,6 +195,40 @@ streamlit run app.py
 "How many transactions did I have yesterday?"
 → Instant SQL query and answer
 ```
+
+## 🤖 Advanced AI Features
+
+The system includes cutting-edge AI capabilities accessible through the "🤖 AI Features" tab:
+
+### 💬 Multi-turn Conversation Management
+- **Context Retention**: Maintains conversation history across sessions
+- **Smart Cleanup**: Automatically manages context length for optimal performance
+- **Session Tracking**: Supports multiple concurrent conversations
+- **Metadata Support**: Stores additional context information
+
+### 🔮 Predictive Query Suggestions
+- **Pattern Recognition**: Learns from user query patterns
+- **AI-Powered Recommendations**: Uses Gemini for intelligent suggestions
+- **Frequency Analysis**: Suggests commonly used queries
+- **Context-Aware**: Adapts suggestions based on current input
+
+### 🔍 Anomaly Detection
+- **Statistical Methods**: Z-score and IQR-based outlier detection
+- **Machine Learning**: Isolation Forest algorithm for complex patterns
+- **Configurable Thresholds**: Adjustable sensitivity for different use cases
+- **Detailed Reporting**: Comprehensive anomaly analysis with explanations
+
+### 📊 Automated Report Generation
+- **Multiple Report Types**: Summary, detailed analysis, and trend reports
+- **Data Visualization**: Charts and graphs for better insights
+- **AI Insights**: Gemini-powered business intelligence
+- **Export Capabilities**: Structured reports with actionable recommendations
+
+### 🔧 MCP Integration
+- **Model Context Protocol**: Standardized interface for AI tools
+- **External Services**: Connect to third-party AI services
+- **Tool Orchestration**: Unified access to all AI capabilities
+- **Extensible Architecture**: Easy addition of new AI features
 
 ## 📚 Documentation
 

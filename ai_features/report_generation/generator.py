@@ -387,3 +387,37 @@ class ReportGenerator:
                 f"Error generating recommendations: {str(e)}")
 
         return recommendations
+
+    def _get_ai_recommendations(self, df: pd.DataFrame, anomalies: Dict) -> List[str]:
+        """Get AI-generated recommendations"""
+        try:
+            context = {
+                "total_transactions": len(df),
+                "anomaly_count": len(anomalies.get("high_value", [])),
+                "status_distribution": df['status'].value_counts().to_dict() if 'status' in df.columns else {}
+            }
+
+            prompt = f"""
+            Based on this transaction analysis context, provide 2-3 actionable business recommendations:
+
+            {json.dumps(context, indent=2)}
+
+            Focus on operational improvements, risk management, and business optimization.
+            Return only a JSON array of recommendation strings.
+            """
+
+            model = genai.GenerativeModel('gemini-pro')
+            response = model.generate_content(prompt)
+
+            response_text = response.text.strip()
+            if response_text.startswith('```json'):
+                response_text = response_text[7:]
+            if response_text.endswith('```'):
+                response_text = response_text[:-3]
+
+            recommendations = json.loads(response_text)
+            return recommendations if isinstance(recommendations, list) else []
+
+        except Exception as e:
+            print(f"Error getting AI recommendations: {e}")
+            return []

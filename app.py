@@ -12,6 +12,16 @@ import signal
 from contextlib import contextmanager
 from typing import Optional, List, Tuple
 from support_agent import get_support_agent
+
+
+# Import AI features
+from ai_features.conversation.manager import ConversationManager
+from ai_features.suggestions.predictor import QueryPredictor
+from ai_features.anomaly_detection.detector import AnomalyDetector
+from ai_features.report_generation.generator import ReportGenerator
+from mcp.client.mcp_client import MCPClientManager
+from tools.external.external_tools import external_tools_manager
+
 load_dotenv()  # Load all the env variables - updated with google api key
 
 
@@ -133,6 +143,13 @@ def get_query_info(sql: str) -> dict:
         'query_length': len(sql)
     }
 
+=======
+# Initialize AI features
+conversation_manager = ConversationManager()
+query_predictor = QueryPredictor()
+anomaly_detector = AnomalyDetector()
+report_generator = ReportGenerator()
+mcp_client = MCPClientManager()
 
 # Function to Load Gemini Model and provide sql query response
 
@@ -327,7 +344,8 @@ st.set_page_config(page_title="Financial Data Analyst with Gemini Pro",
                    page_icon=":bar_chart:", layout="wide")
 
 # Create tabs for different features
-tab1, tab2 = st.tabs(["📊 Data Query", "🎯 Support Routing"])
+tab1, tab2, tab3 = st.tabs(
+    ["📊 Data Query", "🎯 Support Routing", "🤖 AI Features"])
 
 with tab1:
     st.title("Financial Data Analyst with Gemini Pro :bar_chart:")
@@ -476,3 +494,179 @@ with tab2:
     except Exception as e:
         st.info(
             "📊 No support tickets yet. Statistics will appear after first ticket is created.")
+
+with tab3:
+    st.title("🤖 Advanced AI Features")
+    st.markdown("""
+    Explore our cutting-edge AI capabilities for enhanced financial data analysis.
+    """)
+
+    # Sub-tabs for different AI features
+    ai_tab1, ai_tab2, ai_tab3, ai_tab4 = st.tabs([
+        "💬 Multi-turn Conversations",
+        "🔮 Query Suggestions",
+        "🔍 Anomaly Detection",
+        "📊 Automated Reports"
+    ])
+
+    with ai_tab1:
+        st.header("💬 Multi-turn Conversation Management")
+        st.markdown(
+            "Maintain context across multiple interactions for more natural conversations.")
+
+        user_id = st.text_input(
+            "User ID for conversation:", value="default_user", key="conv_user_id")
+        action = st.selectbox(
+            "Action:", ["add", "get", "clear"], key="conv_action")
+
+        if action == "add":
+            message = st.text_area("Message to add:", key="conv_message")
+            if st.button("Add Message", key="add_msg_btn"):
+                conversation_manager.add_message(user_id, "user", message)
+                st.success("Message added to conversation context!")
+        elif action == "get":
+            if st.button("Get Context", key="get_context_btn"):
+                context = conversation_manager.get_context(user_id)
+                st.json(context)
+        elif action == "clear":
+            if st.button("Clear Context", key="clear_context_btn"):
+                conversation_manager.clear_context(user_id)
+                st.success("Conversation context cleared!")
+
+    with ai_tab2:
+        st.header("🔮 Predictive Query Suggestions")
+        st.markdown(
+            "Get intelligent query suggestions based on your history and current input.")
+
+        user_id_suggest = st.text_input(
+            "User ID:", value="default_user", key="suggest_user_id")
+        current_query = st.text_input(
+            "Current query (optional):", key="current_query")
+
+        if st.button("Get Suggestions", key="get_suggestions_btn"):
+            suggestions = query_predictor.get_suggestions(
+                user_id_suggest, current_query)
+            if suggestions:
+                st.subheader("Suggested Queries:")
+                for i, suggestion in enumerate(suggestions, 1):
+                    confidence_pct = int(suggestion.get('confidence', 0) * 100)
+                    st.write(
+                        f"{i}. **{suggestion['query']}** (Confidence: {confidence_pct}%)")
+                    st.caption(
+                        f"Type: {suggestion.get('type', 'unknown')} | Reason: {suggestion.get('reason', 'N/A')}")
+            else:
+                st.info("No suggestions available.")
+
+    with ai_tab3:
+        st.header("🔍 Transaction Anomaly Detection")
+        st.markdown(
+            "Detect unusual patterns and anomalies in your transaction data.")
+
+        # Get sample data for demonstration
+        try:
+            sample_data = read_sql_query(
+                "SELECT * FROM fintech LIMIT 100", 'fintech.db')
+            if sample_data:
+                st.subheader("Sample Transaction Data:")
+                st.dataframe(sample_data[:10])  # Show first 10 rows
+
+                threshold = st.slider(
+                    "Anomaly Detection Threshold:", 0.5, 0.99, 0.95, key="anomaly_threshold")
+
+                if st.button("Detect Anomalies", key="detect_anomalies_btn"):
+                    with st.spinner("Analyzing for anomalies..."):
+                        results = anomaly_detector.detect_anomalies(
+                            sample_data, threshold)
+
+                    if results.get("anomalies"):
+                        st.subheader("🚨 Detected Anomalies:")
+                        for anomaly in results["anomalies"][:5]:  # Show top 5
+                            st.error(f"""
+                            **Transaction ID:** {anomaly.get('transaction_id', 'N/A')}
+                            **Amount:** ${anomaly.get('amount', 0):.2f}
+                            **Reason:** {anomaly.get('reason', 'Unknown')}
+                            **Method:** {anomaly.get('method', 'Unknown')}
+                            """)
+                    else:
+                        st.success("No anomalies detected in the data.")
+
+                    # Show statistics
+                    if results.get("stats"):
+                        st.subheader("📊 Data Statistics:")
+                        stats = results["stats"]
+                        col1, col2, col3 = st.columns(3)
+                        with col1:
+                            st.metric("Total Transactions",
+                                      stats.get("transaction_count", 0))
+                        with col2:
+                            st.metric("Total Amount",
+                                      f"${stats.get('total_amount', 0):,.2f}")
+                        with col3:
+                            st.metric("Average Amount",
+                                      f"${stats.get('average_amount', 0):,.2f}")
+            else:
+                st.warning("No transaction data available for analysis.")
+        except Exception as e:
+            st.error(f"Error loading transaction data: {str(e)}")
+
+    with ai_tab4:
+        st.header("📊 Automated Report Generation")
+        st.markdown(
+            "Generate comprehensive reports from your transaction data.")
+
+        report_type = st.selectbox(
+            "Report Type:", ["summary", "detailed", "trends"], key="report_type")
+
+        # Date filters
+        col1, col2 = st.columns(2)
+        with col1:
+            start_date = st.date_input(
+                "Start Date (optional)", key="report_start_date")
+        with col2:
+            end_date = st.date_input(
+                "End Date (optional)", key="report_end_date")
+
+        filters = {}
+        if start_date:
+            filters["date_from"] = start_date.isoformat()
+        if end_date:
+            filters["date_to"] = end_date.isoformat()
+
+        if st.button("Generate Report", key="generate_report_btn"):
+            try:
+                # Get data for report
+                data = read_sql_query("SELECT * FROM fintech", 'fintech.db')
+
+                with st.spinner("Generating report..."):
+                    report = report_generator.generate_report(
+                        report_type, data, filters)
+
+                if "error" in report:
+                    st.error(f"Report generation failed: {report['error']}")
+                else:
+                    st.subheader(
+                        f"📋 {report.get('title', 'Generated Report')}")
+
+                    # Display report sections
+                    if "sections" in report:
+                        for section_name, section_data in report["sections"].items():
+                            st.subheader(f"**{section_name.title()}**")
+                            if isinstance(section_data, list):
+                                for item in section_data:
+                                    st.write(f"• {item}")
+                            elif isinstance(section_data, dict):
+                                st.json(section_data)
+                            else:
+                                st.write(section_data)
+
+                    # Display charts if available
+                    if "charts" in report and report["charts"]:
+                        st.subheader("📊 Visualizations")
+                        for chart_name, chart_data in report["charts"].items():
+                            if chart_data and "data:image" in chart_data:
+                                st.image(chart_data)
+                            else:
+                                st.write(f"Chart: {chart_name} - {chart_data}")
+
+            except Exception as e:
+                st.error(f"Error generating report: {str(e)}")
