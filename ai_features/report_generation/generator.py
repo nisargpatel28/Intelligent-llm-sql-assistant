@@ -421,3 +421,27 @@ class ReportGenerator:
         except Exception as e:
             print(f"Error getting AI recommendations: {e}")
             return []
+
+    def _analyze_patterns(self, df: pd.DataFrame) -> Dict:
+        """Analyze transaction patterns"""
+        patterns = {}
+
+        try:
+            # Peak hours/days
+            if df['date'].dt.hour.notna().any():
+                hourly_volume = df.groupby(df['date'].dt.hour).size()
+                peak_hour = hourly_volume.idxmax()
+                patterns["peak_hour"] = int(peak_hour)
+
+            daily_volume = df.groupby(df['date'].dt.day_name()).size()
+            peak_day = daily_volume.idxmax()
+            patterns["peak_day"] = peak_day
+
+            # Seasonal patterns
+            monthly_volume = df.groupby(df['date'].dt.month).size()
+            patterns["monthly_distribution"] = monthly_volume.to_dict()
+
+        except Exception as e:
+            patterns["error"] = str(e)
+
+        return patterns
