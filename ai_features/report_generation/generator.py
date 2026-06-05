@@ -445,3 +445,25 @@ class ReportGenerator:
             patterns["error"] = str(e)
 
         return patterns
+
+    def _generate_charts(self, df: pd.DataFrame, chart_types: List[str]) -> Dict:
+        """Generate base64 encoded charts"""
+        charts = {}
+
+        try:
+            for chart_type in chart_types:
+                if chart_type == "amount_distribution":
+                    charts["amount_distribution"] = self._create_amount_distribution_chart(
+                        df)
+                elif chart_type == "status_pie":
+                    charts["status_pie"] = self._create_status_pie_chart(df)
+                elif chart_type == "time_series":
+                    charts["time_series"] = self._create_time_series_chart(df)
+                elif chart_type == "trends_over_time":
+                    charts["trends_over_time"] = self._create_trends_chart(df)
+                # Add more chart types as needed
+
+        except Exception as e:
+            charts["error"] = str(e)
+
+        return charts
