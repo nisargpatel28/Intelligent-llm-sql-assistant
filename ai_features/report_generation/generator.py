@@ -467,3 +467,15 @@ class ReportGenerator:
             charts["error"] = str(e)
 
         return charts
+
+    def _create_amount_distribution_chart(self, df: pd.DataFrame) -> str:
+        """Create amount distribution histogram"""
+        plt.figure(figsize=(10, 6))
+        plt.hist(df['amount'], bins=50, alpha=0.7,
+                 color='blue', edgecolor='black')
+        plt.title('Transaction Amount Distribution')
+        plt.xlabel('Amount ($)')
+        plt.ylabel('Frequency')
+        plt.grid(True, alpha=0.3)
+
+        return self._encode_plot_to_base64()
