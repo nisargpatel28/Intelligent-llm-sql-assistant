@@ -479,3 +479,16 @@ class ReportGenerator:
         plt.grid(True, alpha=0.3)
 
         return self._encode_plot_to_base64()
+
+    def _create_status_pie_chart(self, df: pd.DataFrame) -> str:
+        """Create status distribution pie chart"""
+        if 'status' not in df.columns:
+            return ""
+
+        plt.figure(figsize=(8, 8))
+        status_counts = df['status'].value_counts()
+        plt.pie(status_counts.values,
+                labels=status_counts.index, autopct='%1.1f%%')
+        plt.title('Transaction Status Distribution')
+
+        return self._encode_plot_to_base64()
