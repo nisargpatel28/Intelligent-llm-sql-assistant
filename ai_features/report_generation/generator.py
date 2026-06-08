@@ -492,3 +492,20 @@ class ReportGenerator:
         plt.title('Transaction Status Distribution')
 
         return self._encode_plot_to_base64()
+
+    def _create_time_series_chart(self, df: pd.DataFrame) -> str:
+        """Create time series chart"""
+        if 'date' not in df.columns:
+            return ""
+
+        plt.figure(figsize=(12, 6))
+        daily_totals = df.groupby(df['date'].dt.date)['amount'].sum()
+        plt.plot(daily_totals.index, daily_totals.values,
+                 marker='o', linestyle='-')
+        plt.title('Daily Transaction Totals')
+        plt.xlabel('Date')
+        plt.ylabel('Total Amount ($)')
+        plt.xticks(rotation=45)
+        plt.grid(True, alpha=0.3)
+
+        return self._encode_plot_to_base64()
