@@ -509,3 +509,21 @@ class ReportGenerator:
         plt.grid(True, alpha=0.3)
 
         return self._encode_plot_to_base64()
+
+    def _create_trends_chart(self, df: pd.DataFrame) -> str:
+        """Create trends over time chart"""
+        if 'date' not in df.columns:
+            return ""
+
+        plt.figure(figsize=(12, 6))
+        weekly_totals = df.groupby(df['date'].dt.to_period('W'))[
+            'amount'].sum()
+        plt.plot(weekly_totals.index.astype(str),
+                 weekly_totals.values, marker='o', linestyle='-')
+        plt.title('Weekly Transaction Trends')
+        plt.xlabel('Week')
+        plt.ylabel('Total Amount ($)')
+        plt.xticks(rotation=45)
+        plt.grid(True, alpha=0.3)
+
+        return self._encode_plot_to_base64()
