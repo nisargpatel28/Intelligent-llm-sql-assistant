@@ -527,3 +527,12 @@ class ReportGenerator:
         plt.grid(True, alpha=0.3)
 
         return self._encode_plot_to_base64()
+
+    def _encode_plot_to_base64(self) -> str:
+        """Encode matplotlib plot to base64 string"""
+        buffer = BytesIO()
+        plt.savefig(buffer, format='png', dpi=100, bbox_inches='tight')
+        buffer.seek(0)
+        image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+        plt.close()
+        return f"data:image/png;base64,{image_base64}"
