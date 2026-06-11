@@ -536,3 +536,13 @@ class ReportGenerator:
         image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
         plt.close()
         return f"data:image/png;base64,{image_base64}"
+
+    def _get_date_range(self, df: pd.DataFrame) -> Dict:
+        """Get date range from dataframe"""
+        if 'date' not in df.columns:
+            return {"start": None, "end": None}
+
+        return {
+            "start": str(df['date'].min()),
+            "end": str(df['date'].max())
+        }
