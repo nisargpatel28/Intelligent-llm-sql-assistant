@@ -46,3 +46,24 @@ class QueryPredictor:
 
         conn.commit()
         conn.close()
+
+    def record_query(self, user_id: str, query: str, success: bool = True,
+                     execution_time: Optional[float] = None, result_count: Optional[int] = None):
+        """Record a query execution for learning"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO query_history (user_id, query, timestamp, success, execution_time, result_count)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (
+            user_id,
+            query.lower().strip(),
+            datetime.now().isoformat(),
+            success,
+            execution_time,
+            result_count
+        ))
+
+        conn.commit()
+        conn.close()
