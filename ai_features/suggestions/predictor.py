@@ -67,3 +67,39 @@ class QueryPredictor:
 
         conn.commit()
         conn.close()
+
+    def get_suggestions(self, user_id: str, current_query: str = "",
+                        context: Optional[Dict] = None) -> List[Dict]:
+        """Get query suggestions based on user history and current input"""
+        suggestions = []
+
+        # Get pattern-based suggestions
+        pattern_suggestions = self._get_pattern_suggestions(
+            user_id, current_query)
+        suggestions.extend(pattern_suggestions)
+
+        # Get frequency-based suggestions
+        frequency_suggestions = self._get_frequency_suggestions(
+            user_id, current_query)
+        suggestions.extend(frequency_suggestions)
+
+        # Get AI-powered suggestions if available
+        if GEMINI_AVAILABLE and context:
+            ai_suggestions = self._get_ai_suggestions(
+                user_id, current_query, context)
+            suggestions.extend(ai_suggestions)
+
+        # Remove duplicates and sort by relevance
+        seen = set()
+        unique_suggestions = []
+        for suggestion in suggestions:
+            key = suggestion.get('query', '').lower()
+            if key not in seen:
+                seen.add(key)
+                unique_suggestions.append(suggestion)
+
+        # Sort by confidence score
+        unique_suggestions.sort(key=lambda x: x.get(
+            'confidence', 0), reverse=True)
+
+        return unique_suggestions[:10]  # Return top 10 suggestions
