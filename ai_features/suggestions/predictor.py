@@ -103,3 +103,35 @@ class QueryPredictor:
             'confidence', 0), reverse=True)
 
         return unique_suggestions[:10]  # Return top 10 suggestions
+
+    def _get_pattern_suggestions(self, user_id: str, current_query: str) -> List[Dict]:
+        """Get suggestions based on query patterns"""
+        suggestions = []
+
+        if not current_query.strip():
+            return suggestions
+
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        # Find queries that start with similar patterns
+        current_lower = current_query.lower()
+        cursor.execute("""
+            SELECT DISTINCT query, COUNT(*) as frequency
+            FROM query_history
+            WHERE user_id = ? AND query LIKE ?
+            GROUP BY query
+            ORDER BY frequency DESC
+            LIMIT 5
+        """, (user_id, f"{current_lower}%"))
+
+        for row in cursor.fetchall():
+            suggestions.append({
+                'query': row[0],
+                'type': 'pattern',
+                'confidence': min(row[1] / 10, 1.0),  # Normalize frequency
+                'reason': 'Based on similar query patterns'
+            })
+
+        conn.close()
+        return suggestions
