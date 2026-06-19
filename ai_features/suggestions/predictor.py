@@ -135,3 +135,33 @@ class QueryPredictor:
 
         conn.close()
         return suggestions
+
+    def _get_frequency_suggestions(self, user_id: str, current_query: str) -> List[Dict]:
+        """Get suggestions based on query frequency"""
+        suggestions = []
+
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        # Get most frequent successful queries from recent history
+        cutoff_date = (datetime.now() - timedelta(days=30)).isoformat()
+
+        cursor.execute("""
+            SELECT query, COUNT(*) as frequency, AVG(execution_time) as avg_time
+            FROM query_history
+            WHERE user_id = ? AND timestamp >= ? AND success = 1
+            GROUP BY query
+            ORDER BY frequency DESC
+            LIMIT 5
+        """, (user_id, cutoff_date))
+
+        for row in cursor.fetchall():
+            suggestions.append({
+                'query': row[0],
+                'type': 'frequency',
+                'confidence': min(row[1] / 20, 1.0),  # Normalize frequency
+                'reason': f'Frequently used query (avg time: {row[2]:.2f}s)' if row[2] else 'Frequently used query'
+            })
+
+        conn.close()
+        return suggestions
