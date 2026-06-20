@@ -165,3 +165,67 @@ class QueryPredictor:
 
         conn.close()
         return suggestions
+
+    def _get_ai_suggestions(self, user_id: str, current_query: str, context: Dict) -> List[Dict]:
+        """Get AI-powered suggestions using Gemini"""
+        if not GEMINI_AVAILABLE:
+            return []
+
+        try:
+            # Get recent query history for context
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+
+            cursor.execute("""
+                SELECT query
+                FROM query_history
+                WHERE user_id = ?
+                ORDER BY timestamp DESC
+                LIMIT 10
+            """, (user_id,))
+
+            recent_queries = [row[0] for row in cursor.fetchall()]
+            conn.close()
+
+            if not recent_queries:
+                return []
+
+            # Prepare prompt for Gemini
+            prompt = f"""
+            Based on the user's query history and current input, suggest relevant financial data queries.
+
+            Recent queries: {json.dumps(recent_queries)}
+            Current partial query: "{current_query}"
+            Context: {json.dumps(context)}
+
+            Suggest 3-5 complete, relevant queries that the user might want to ask.
+            Focus on financial transactions, analytics, and common banking queries.
+            Return only a JSON array of query strings.
+            """
+
+            model = genai.GenerativeModel('gemini-pro')
+            response = model.generate_content(prompt)
+
+            # Parse the response
+            response_text = response.text.strip()
+            if response_text.startswith('```json'):
+                response_text = response_text[7:]
+            if response_text.endswith('```'):
+                response_text = response_text[:-3]
+
+            suggestions_data = json.loads(response_text)
+
+            suggestions = []
+            for i, query in enumerate(suggestions_data):
+                suggestions.append({
+                    'query': query,
+                    'type': 'ai',
+                    'confidence': 0.8 - (i * 0.1),  # Decreasing confidence
+                    'reason': 'AI-powered suggestion based on your history'
+                })
+
+            return suggestions
+
+        except Exception as e:
+            print(f"Error getting AI suggestions: {e}")
+            return []
