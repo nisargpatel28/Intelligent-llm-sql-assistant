@@ -229,3 +229,32 @@ class QueryPredictor:
         except Exception as e:
             print(f"Error getting AI suggestions: {e}")
             return []
+
+    def get_query_stats(self, user_id: str) -> Dict:
+        """Get statistics about user's query patterns"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT COUNT(*), COUNT(DISTINCT query), AVG(execution_time), AVG(result_count)
+            FROM query_history
+            WHERE user_id = ? AND success = 1
+        """, (user_id,))
+
+        row = cursor.fetchone()
+        conn.close()
+
+        if row and row[0] > 0:
+            return {
+                "total_queries": row[0],
+                "unique_queries": row[1],
+                "avg_execution_time": row[2],
+                "avg_result_count": row[3]
+            }
+        else:
+            return {
+                "total_queries": 0,
+                "unique_queries": 0,
+                "avg_execution_time": None,
+                "avg_result_count": None
+            }
