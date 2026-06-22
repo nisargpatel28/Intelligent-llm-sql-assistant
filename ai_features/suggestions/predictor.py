@@ -258,3 +258,27 @@ class QueryPredictor:
                 "avg_execution_time": None,
                 "avg_result_count": None
             }
+
+    def get_popular_queries(self, limit: int = 10) -> List[Dict]:
+        """Get most popular queries across all users"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT query, COUNT(*) as frequency
+            FROM query_history
+            WHERE success = 1
+            GROUP BY query
+            ORDER BY frequency DESC
+            LIMIT ?
+        """, (limit,))
+
+        queries = []
+        for row in cursor.fetchall():
+            queries.append({
+                "query": row[0],
+                "frequency": row[1]
+            })
+
+        conn.close()
+        return queries
