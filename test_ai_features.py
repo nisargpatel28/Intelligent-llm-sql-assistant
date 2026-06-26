@@ -26,3 +26,33 @@ def test_imports():
     except Exception as e:
         print(f"✗ Import error: {e}")
         return False
+
+
+def test_basic_functionality():
+    """Test basic functionality of AI features"""
+    try:
+        from ai_features.conversation.manager import ConversationManager
+
+        # Test conversation manager
+        manager = ConversationManager()
+
+        # Add a test message
+        manager.add_message("test_user", "user", "Hello world")
+        print("✓ Conversation manager: message added")
+
+        # Get context
+        context = manager.get_context("test_user")
+        assert len(context) == 1
+        assert context[0]["content"] == "Hello world"
+        print("✓ Conversation manager: context retrieved")
+
+        # Clear context
+        manager.clear_context("test_user")
+        context = manager.get_context("test_user")
+        assert len(context) == 0
+        print("✓ Conversation manager: context cleared")
+
+        return True
+    except Exception as e:
+        print(f"✗ Functionality test error: {e}")
+        return False
