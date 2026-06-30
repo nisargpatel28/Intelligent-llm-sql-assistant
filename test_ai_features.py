@@ -56,3 +56,26 @@ def test_basic_functionality():
     except Exception as e:
         print(f"✗ Functionality test error: {e}")
         return False
+
+
+if __name__ == "__main__":
+    print("Testing AI Features Implementation")
+    print("=" * 40)
+
+    success = True
+
+    print("\n1. Testing imports...")
+    if not test_imports():
+        success = False
+
+    print("\n2. Testing basic functionality...")
+    if not test_basic_functionality():
+        success = False
+
+    print("\n" + "=" * 40)
+    if success:
+        print("✓ All tests passed! AI features are properly implemented.")
+    else:
+        print("✗ Some tests failed. Please check the implementation.")
+
+    sys.exit(0 if success else 1)
