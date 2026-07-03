@@ -49,3 +49,29 @@ class ExternalFeatureClient:
                 "error": str(e),
                 "fallback": "local_processing"
             }
+
+    async def call_prediction_service(self, user_id: str, current_query: str, context: Dict) -> Dict:
+        """Call external query prediction service"""
+        try:
+            payload = {
+                "user_id": user_id,
+                "current_query": current_query,
+                "context": context,
+                "timestamp": datetime.now().isoformat()
+            }
+
+            result = await self._simulate_external_call("prediction", payload)
+
+            return {
+                "success": True,
+                "suggestions": result.get("suggestions", []),
+                "source": "external_prediction_service"
+            }
+
+        except Exception as e:
+            logger.error(f"Error calling prediction service: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "suggestions": []
+            }
