@@ -75,3 +75,29 @@ class ExternalFeatureClient:
                 "error": str(e),
                 "suggestions": []
             }
+
+    async def call_anomaly_service(self, data: List[Dict], threshold: float) -> Dict:
+        """Call external anomaly detection service"""
+        try:
+            payload = {
+                "data": data,
+                "threshold": threshold,
+                "timestamp": datetime.now().isoformat()
+            }
+
+            result = await self._simulate_external_call("anomaly", payload)
+
+            return {
+                "success": True,
+                "anomalies": result.get("anomalies", []),
+                "stats": result.get("stats", {}),
+                "source": "external_anomaly_service"
+            }
+
+        except Exception as e:
+            logger.error(f"Error calling anomaly service: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "anomalies": []
+            }
