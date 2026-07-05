@@ -101,3 +101,29 @@ class ExternalFeatureClient:
                 "error": str(e),
                 "anomalies": []
             }
+
+    async def call_report_service(self, report_type: str, data: List[Dict], filters: Dict) -> Dict:
+        """Call external report generation service"""
+        try:
+            payload = {
+                "report_type": report_type,
+                "data": data,
+                "filters": filters,
+                "timestamp": datetime.now().isoformat()
+            }
+
+            result = await self._simulate_external_call("report", payload)
+
+            return {
+                "success": True,
+                "report": result,
+                "source": "external_report_service"
+            }
+
+        except Exception as e:
+            logger.error(f"Error calling report service: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "report": {}
+            }
