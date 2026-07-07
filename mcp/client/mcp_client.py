@@ -185,3 +185,28 @@ class ExternalFeatureClient:
             }
 
         return {}
+
+    async def call_mcp_server(self, server_url: str, tool_name: str, arguments: Dict) -> Dict:
+        """Call an MCP server directly"""
+        try:
+            payload = {
+                "tool": tool_name,
+                "arguments": arguments
+            }
+
+            # In a real implementation, this would make an HTTP call to the MCP server
+            # For now, we'll simulate it
+            result = await self._simulate_mcp_call(server_url, payload)
+
+            return {
+                "success": True,
+                "result": result,
+                "server": server_url
+            }
+
+        except Exception as e:
+            logger.error(f"Error calling MCP server {server_url}: {e}")
+            return {
+                "success": False,
+                "error": str(e)
+            }
