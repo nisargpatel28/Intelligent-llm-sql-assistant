@@ -210,3 +210,47 @@ class ExternalFeatureClient:
                 "success": False,
                 "error": str(e)
             }
+
+    async def _simulate_mcp_call(self, server_url: str, payload: Dict) -> List[Dict]:
+        """Simulate MCP server call"""
+        await asyncio.sleep(0.2)  # Simulate network delay
+
+        tool = payload.get("tool")
+        args = payload.get("arguments", {})
+
+        # Simulate different tool responses
+        if tool == "conversation_context":
+            return [{
+                "type": "text",
+                "content": f"Processed conversation for user {args.get('user_id', 'unknown')}"
+            }]
+
+        elif tool == "query_suggestions":
+            return [{
+                "type": "text",
+                "content": json.dumps([
+                    {"query": "Show my account balance", "confidence": 0.9},
+                    {"query": "List recent transactions", "confidence": 0.8}
+                ])
+            }]
+
+        elif tool == "anomaly_detection":
+            return [{
+                "type": "text",
+                "content": json.dumps({
+                    "anomalies": [{"amount": 10000, "reason": "High value"}],
+                    "total_analyzed": len(args.get("data", []))
+                })
+            }]
+
+        elif tool == "report_generation":
+            return [{
+                "type": "text",
+                "content": json.dumps({
+                    "title": "Generated Report",
+                    "sections": ["Summary", "Details"]
+                })
+            }]
+
+        return [{"type": "text", "content": f"Unknown tool: {tool}"}]
+
