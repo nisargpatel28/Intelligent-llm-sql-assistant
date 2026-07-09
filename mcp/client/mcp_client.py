@@ -254,3 +254,8 @@ class ExternalFeatureClient:
 
         return [{"type": "text", "content": f"Unknown tool: {tool}"}]
 
+    def close(self):
+        """Clean up resources"""
+        self.executor.shutdown(wait=True)
+        self.session.close()
+
