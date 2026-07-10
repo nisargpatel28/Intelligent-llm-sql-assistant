@@ -259,3 +259,45 @@ class ExternalFeatureClient:
         self.executor.shutdown(wait=True)
         self.session.close()
 
+
+class MCPClientManager:
+    """Manager for multiple MCP clients and external services"""
+
+    def __init__(self):
+        self.external_client = ExternalFeatureClient()
+        self.registered_servers = {}  # server_url -> capabilities
+
+    def register_mcp_server(self, server_url: str, capabilities: List[str]):
+        """Register an MCP server with its capabilities"""
+        self.registered_servers[server_url] = capabilities
+
+    async def call_external_feature(self, feature: str, **kwargs) -> Dict:
+        """Call an external feature, routing to appropriate service"""
+        if feature == "conversation":
+            return await self.external_client.call_conversation_service(**kwargs)
+        elif feature == "prediction":
+            return await self.external_client.call_prediction_service(**kwargs)
+        elif feature == "anomaly":
+            return await self.external_client.call_anomaly_service(**kwargs)
+        elif feature == "report":
+            return await self.external_client.call_report_service(**kwargs)
+        else:
+            return {"success": False, "error": f"Unknown feature: {feature}"}
+
+    async def discover_services(self) -> Dict:
+        """Discover available external services"""
+        # In a real implementation, this would query a service registry
+        return {
+            "conversation_services": ["local", "external"],
+            "prediction_services": ["local", "external_ai"],
+            "anomaly_services": ["local", "external_ml"],
+            "report_services": ["local", "external_generator"]
+        }
+
+    def get_service_status(self) -> Dict:
+        """Get status of all external services"""
+        return {
+            "external_client": "available",
+            "mcp_servers": len(self.registered_servers),
+            "last_check": datetime.now().isoformat()
+        }
