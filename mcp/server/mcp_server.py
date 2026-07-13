@@ -16,3 +16,7 @@ from ai_features.conversation.manager import ConversationManager
 from ai_features.suggestions.predictor import QueryPredictor
 from ai_features.anomaly_detection.detector import AnomalyDetector
 from ai_features.report_generation.generator import ReportGenerator
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
