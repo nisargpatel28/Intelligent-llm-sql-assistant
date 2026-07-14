@@ -20,3 +20,13 @@ from ai_features.report_generation.generator import ReportGenerator
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
+class LLMAssistantMCPServer:
+    """MCP Server providing AI capabilities for the LLM SQL Assistant"""
+
+    def __init__(self):
+        self.server = Server("llm-sql-assistant")
+        self.conversation_manager = ConversationManager()
+        self.query_predictor = QueryPredictor()
+        self.anomaly_detector = AnomalyDetector()
+        self.report_generator = ReportGenerator()
