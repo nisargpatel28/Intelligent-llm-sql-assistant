@@ -30,3 +30,29 @@ class LLMAssistantMCPServer:
         self.query_predictor = QueryPredictor()
         self.anomaly_detector = AnomalyDetector()
         self.report_generator = ReportGenerator()
+
+    async def handle_conversation_context(self, arguments: Dict[str, Any]) -> List[types.TextContent]:
+        """Handle multi-turn conversation context management"""
+        user_id = arguments.get("user_id", "default")
+        message = arguments.get("message", "")
+        action = arguments.get("action", "add")  # add, get, clear
+
+        try:
+            if action == "add":
+                self.conversation_manager.add_message(user_id, "user", message)
+                return [types.TextContent(type="text", text="Message added to conversation context")]
+
+            elif action == "get":
+                context = self.conversation_manager.get_context(user_id)
+                return [types.TextContent(type="text", text=json.dumps(context, indent=2))]
+
+            elif action == "clear":
+                self.conversation_manager.clear_context(user_id)
+                return [types.TextContent(type="text", text="Conversation context cleared")]
+
+            else:
+                return [types.TextContent(type="text", text=f"Unknown action: {action}")]
+
+        except Exception as e:
+            logger.error(f"Error in conversation context: {e}")
+            return [types.TextContent(type="text", text=f"Error: {str(e)}")]
