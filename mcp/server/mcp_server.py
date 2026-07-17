@@ -56,3 +56,18 @@ class LLMAssistantMCPServer:
         except Exception as e:
             logger.error(f"Error in conversation context: {e}")
             return [types.TextContent(type="text", text=f"Error: {str(e)}")]
+
+    async def handle_query_suggestions(self, arguments: Dict[str, Any]) -> List[types.TextContent]:
+        """Handle predictive query suggestions"""
+        user_id = arguments.get("user_id", "default")
+        current_query = arguments.get("current_query", "")
+        context = arguments.get("context", {})
+
+        try:
+            suggestions = self.query_predictor.get_suggestions(
+                user_id, current_query, context)
+            return [types.TextContent(type="text", text=json.dumps(suggestions, indent=2))]
+
+        except Exception as e:
+            logger.error(f"Error in query suggestions: {e}")
+            return [types.TextContent(type="text", text=f"Error: {str(e)}")]
