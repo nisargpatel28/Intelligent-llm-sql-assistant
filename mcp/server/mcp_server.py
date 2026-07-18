@@ -71,3 +71,16 @@ class LLMAssistantMCPServer:
         except Exception as e:
             logger.error(f"Error in query suggestions: {e}")
             return [types.TextContent(type="text", text=f"Error: {str(e)}")]
+
+    async def handle_anomaly_detection(self, arguments: Dict[str, Any]) -> List[types.TextContent]:
+        """Handle anomaly detection in transaction data"""
+        data = arguments.get("data", [])
+        threshold = arguments.get("threshold", 0.95)
+
+        try:
+            anomalies = self.anomaly_detector.detect_anomalies(data, threshold)
+            return [types.TextContent(type="text", text=json.dumps(anomalies, indent=2))]
+
+        except Exception as e:
+            logger.error(f"Error in anomaly detection: {e}")
+            return [types.TextContent(type="text", text=f"Error: {str(e)}")]
