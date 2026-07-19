@@ -84,3 +84,18 @@ class LLMAssistantMCPServer:
         except Exception as e:
             logger.error(f"Error in anomaly detection: {e}")
             return [types.TextContent(type="text", text=f"Error: {str(e)}")]
+
+    async def handle_report_generation(self, arguments: Dict[str, Any]) -> List[types.TextContent]:
+        """Handle automated report generation"""
+        report_type = arguments.get("report_type", "summary")
+        data = arguments.get("data", [])
+        filters = arguments.get("filters", {})
+
+        try:
+            report = self.report_generator.generate_report(
+                report_type, data, filters)
+            return [types.TextContent(type="text", text=json.dumps(report, indent=2))]
+
+        except Exception as e:
+            logger.error(f"Error in report generation: {e}")
+            return [types.TextContent(type="text", text=f"Error: {str(e)}")]
