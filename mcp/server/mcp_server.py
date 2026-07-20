@@ -99,3 +99,62 @@ class LLMAssistantMCPServer:
         except Exception as e:
             logger.error(f"Error in report generation: {e}")
             return [types.TextContent(type="text", text=f"Error: {str(e)}")]
+
+    async def setup_tools(self):
+        """Set up MCP tools"""
+
+        @self.server.list_tools()
+        async def handle_list_tools() -> List[Tool]:
+            return [
+                Tool(
+                    name="conversation_context",
+                    description="Manage multi-turn conversation context for users",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "user_id": {"type": "string", "description": "User identifier"},
+                            "message": {"type": "string", "description": "Message to add to context"},
+                            "action": {"type": "string", "enum": ["add", "get", "clear"], "description": "Action to perform"}
+                        },
+                        "required": ["user_id", "action"]
+                    }
+                ),
+                Tool(
+                    name="query_suggestions",
+                    description="Get predictive query suggestions based on user history and context",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "user_id": {"type": "string", "description": "User identifier"},
+                            "current_query": {"type": "string", "description": "Current partial query"},
+                            "context": {"type": "object", "description": "Additional context for suggestions"}
+                        },
+                        "required": ["user_id"]
+                    }
+                ),
+                Tool(
+                    name="anomaly_detection",
+                    description="Detect anomalies in transaction data using statistical methods",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "data": {"type": "array", "description": "Transaction data array"},
+                            "threshold": {"type": "number", "description": "Anomaly detection threshold (0-1)"}
+                        },
+                        "required": ["data"]
+                    }
+                ),
+                Tool(
+                    name="report_generation",
+                    description="Generate automated reports from transaction data",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "report_type": {"type": "string", "enum": ["summary", "detailed", "trends"], "description": "Type of report to generate"},
+                            "data": {"type": "array", "description": "Data for report generation"},
+                            "filters": {"type": "object", "description": "Filters to apply to data"}
+                        },
+                        "required": ["report_type", "data"]
+                    }
+                )
+            ]
