@@ -158,3 +158,17 @@ class LLMAssistantMCPServer:
                     }
                 )
             ]
+
+            
+        @self.server.call_tool()
+        async def handle_call_tool(name: str, arguments: Dict[str, Any]) -> List[types.TextContent]:
+            if name == "conversation_context":
+                return await self.handle_conversation_context(arguments)
+            elif name == "query_suggestions":
+                return await self.handle_query_suggestions(arguments)
+            elif name == "anomaly_detection":
+                return await self.handle_anomaly_detection(arguments)
+            elif name == "report_generation":
+                return await self.handle_report_generation(arguments)
+            else:
+                return [types.TextContent(type="text", text=f"Unknown tool: {name}")]
