@@ -172,3 +172,13 @@ class LLMAssistantMCPServer:
                 return await self.handle_report_generation(arguments)
             else:
                 return [types.TextContent(type="text", text=f"Unknown tool: {name}")]
+
+    async def run(self):
+        """Run the MCP server"""
+        await self.setup_tools()
+        async with stdio_server() as (read_stream, write_stream):
+            await self.server.run(
+                read_stream,
+                write_stream,
+                self.server.create_initialization_options()
+            )
