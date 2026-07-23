@@ -182,3 +182,9 @@ class LLMAssistantMCPServer:
                 write_stream,
                 self.server.create_initialization_options()
             )
+
+
+if __name__ == "__main__":
+    server = LLMAssistantMCPServer()
+    asyncio.run(server.run())
+
