@@ -143,7 +143,6 @@ def get_query_info(sql: str) -> dict:
         'query_length': len(sql)
     }
 
-=======
 # Initialize AI features
 conversation_manager = ConversationManager()
 query_predictor = QueryPredictor()
