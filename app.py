@@ -319,15 +319,32 @@ def enforce_safe_query(sql_query, allowed_tables, allowed_columns, row_limit=100
     return normalized
 
 
-def build_prompt(schema_columns, table='fintech'):
+def format_conversation_history(history):
+    """Format prior conversation turns into a short text block for prompt context."""
+    if not history:
+        return ""
+    lines = []
+    for msg in history:
+        speaker = "User" if msg["role"] == "user" else "Assistant"
+        lines.append(f"    {speaker}: {msg['content']}")
+    return "\n".join(lines)
+
+
+def build_prompt(schema_columns, table='fintech', conversation_history=None):
     columns_info = "\n".join([f"    - {c}" for c in schema_columns])
+    history_block = ""
+    if conversation_history:
+        history_block = f"""
+    Recent conversation history (use this to resolve follow-up questions like "that", "those", or "again"):
+{conversation_history}
+"""
     return [f"""
     You are an expert financial data analyst. You have access to a SQL database named 'fintech.db' which contains a table called '{table}' with the following columns:\n{columns_info}
     Use your SQL skills to analyze the data and provide insights based on user queries.
     The SQL Command should be a SELECT query and should use this exact table and columns.\n
     Carefully generate the SQL statement only; do not include data values in natural language text.
     Wrap generated SQL in triple backticks (```), optionally with language tag `sql`.
-
+{history_block}
     Example Queries:\n
     1. \"What is the total amount of completed transactions?\"\n    SQL:\n        \"SELECT SUM(amount) FROM fintech WHERE status = 'Completed' LIMIT 1000;\"\n
     2. \"How many transactions are pending?\"\n    SQL:\n        \"SELECT COUNT(*) FROM fintech WHERE status = 'Pending' LIMIT 1000;\"\n
@@ -348,6 +365,19 @@ tab1, tab2, tab3 = st.tabs(
 
 with tab1:
     st.title("Financial Data Analyst with Gemini Pro :bar_chart:")
+
+    query_user_id = st.text_input(
+        "User ID (for conversation memory):", value="default_user", key="query_user_id")
+
+    history = conversation_manager.get_context(query_user_id, limit=10)
+    if history:
+        with st.expander(f"💬 Conversation history ({len(history)} messages)"):
+            for msg in history:
+                st.markdown(f"**{msg['role'].title()}:** {msg['content']}")
+            if st.button("Clear Conversation", key="clear_query_conversation"):
+                conversation_manager.clear_context(query_user_id)
+                st.rerun()
+
     question = st.text_input("Ask your financial data related question here:")
     query_params = st.text_input(
         "Optional query parameters (comma-separated)", "")
@@ -360,7 +390,8 @@ with tab1:
         else:
             try:
                 schema_columns = introspect_schema('fintech.db')
-                prompt = build_prompt(schema_columns)
+                conversation_history = format_conversation_history(history)
+                prompt = build_prompt(schema_columns, conversation_history=conversation_history)
                 response = get_gemini_response(question, prompt)
                 print("Gemini Pro Response:", response)
 
@@ -389,6 +420,10 @@ with tab1:
                     st.subheader("Executed SQL")
                     st.code(safe_sql, language='sql')
 
+                    conversation_manager.add_message(query_user_id, "user", question)
+                    conversation_manager.add_message(
+                        query_user_id, "assistant", formatted_answer, metadata={"sql": safe_sql})
+
                 else:
                     st.warning(
                         "Could not extract SQL query from the response. Generating fallback answer.")
@@ -396,6 +431,9 @@ with tab1:
                         question, "No SQL results available due to missing SQL extraction.")
                     st.subheader("Fallback Answer")
                     st.write(fallback_text)
+
+                    conversation_manager.add_message(query_user_id, "user", question)
+                    conversation_manager.add_message(query_user_id, "assistant", fallback_text)
             except Exception as e:
                 st.error(str(e))
 
