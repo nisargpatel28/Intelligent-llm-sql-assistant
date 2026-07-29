@@ -5,6 +5,7 @@ except ModuleNotFoundError:
 
 import sqlite3
 import os
+import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv
 import re
@@ -419,6 +420,38 @@ with tab1:
 
                     st.subheader("Executed SQL")
                     st.code(safe_sql, language='sql')
+
+                    result_conn = sqlite3.connect('fintech.db')
+                    try:
+                        results_df = pd.read_sql_query(
+                            safe_sql, result_conn, params=query_params_tuple)
+                    finally:
+                        result_conn.close()
+
+                    if not results_df.empty:
+                        st.subheader("Results")
+                        st.dataframe(results_df)
+
+                        csv_bytes = results_df.to_csv(index=False).encode('utf-8')
+                        st.download_button(
+                            "Download CSV", csv_bytes,
+                            file_name="query_results.csv", mime="text/csv")
+
+                        numeric_cols = results_df.select_dtypes(
+                            include='number').columns.tolist()
+                        if numeric_cols:
+                            st.subheader("Chart")
+                            non_numeric_cols = [
+                                c for c in results_df.columns if c not in numeric_cols]
+                            if len(results_df) == 1:
+                                chart_df = results_df[numeric_cols].T
+                                chart_df.columns = ["value"]
+                            elif non_numeric_cols:
+                                chart_df = results_df.set_index(
+                                    non_numeric_cols[0])[numeric_cols]
+                            else:
+                                chart_df = results_df[numeric_cols]
+                            st.bar_chart(chart_df)
 
                     conversation_manager.add_message(query_user_id, "user", question)
                     conversation_manager.add_message(
