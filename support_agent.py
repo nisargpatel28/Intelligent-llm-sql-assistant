@@ -20,3 +20,16 @@ load_dotenv()
 
 # Configure Gemini API
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+
+# Support categories for classification
+SUPPORT_CATEGORIES = {
+    "bank_account": [
+        "account balance",
+        "account statement",
+        "account verification",
+        "account closure",
+        "account details",
+        "account settings"
+    ],
+
+}
