@@ -31,5 +31,13 @@ SUPPORT_CATEGORIES = {
         "account details",
         "account settings"
     ],
-
+    "debit_card": [
+        "card blocked",
+        "card replacement",
+        "card declined",
+        "card limit",
+        "card activation",
+        "card fraud",
+        "card pin"
+    ],
 }
