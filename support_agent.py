@@ -40,4 +40,13 @@ SUPPORT_CATEGORIES = {
         "card fraud",
         "card pin"
     ],
+    "cross_border": [
+        "international transfer",
+        "cross-border payment",
+        "forex",
+        "wire transfer",
+        "international wire",
+        "currency exchange",
+        "SWIFT"
+    ],
 }
