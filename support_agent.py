@@ -49,4 +49,13 @@ SUPPORT_CATEGORIES = {
         "currency exchange",
         "SWIFT"
     ],
+    "kyc": [
+        "kyc verification",
+        "identity verification",
+        "document verification",
+        "kyc status",
+        "kyc failed",
+        "kyc update",
+        "aml check"
+    ]
 }
