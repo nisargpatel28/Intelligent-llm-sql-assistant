@@ -59,3 +59,11 @@ SUPPORT_CATEGORIES = {
         "aml check"
     ]
 }
+
+
+class SupportTicketDatabase:
+    """Manages support tickets in SQLite database"""
+
+    def __init__(self, db_path='support_tickets.db'):
+        self.db_path = db_path
+        self.init_database()
