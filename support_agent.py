@@ -67,3 +67,29 @@ class SupportTicketDatabase:
     def __init__(self, db_path='support_tickets.db'):
         self.db_path = db_path
         self.init_database()
+
+    def init_database(self):
+        """Initialize support tickets table"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS support_tickets (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ticket_number TEXT UNIQUE,
+                user_email TEXT NOT NULL,
+                user_query TEXT NOT NULL,
+                category TEXT NOT NULL,
+                priority TEXT DEFAULT 'medium',
+                status TEXT DEFAULT 'open',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                assigned_to TEXT,
+                resolution_notes TEXT,
+                email_sent BOOLEAN DEFAULT 0,
+                email_sent_at TIMESTAMP
+            )
+        """)
+
+        conn.commit()
+        conn.close()
