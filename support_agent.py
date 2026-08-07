@@ -93,3 +93,20 @@ class SupportTicketDatabase:
 
         conn.commit()
         conn.close()
+
+    def create_ticket(self, user_email: str, user_query: str, category: str, priority: str = "medium") -> str:
+        """Create a new support ticket"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        ticket_number = f"TKT-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+
+        cursor.execute("""
+            INSERT INTO support_tickets (ticket_number, user_email, user_query, category, priority)
+            VALUES (?, ?, ?, ?, ?)
+        """, (ticket_number, user_email, user_query, category, priority))
+
+        conn.commit()
+        conn.close()
+
+        return ticket_number
