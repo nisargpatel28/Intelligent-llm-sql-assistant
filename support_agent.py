@@ -110,3 +110,17 @@ class SupportTicketDatabase:
         conn.close()
 
         return ticket_number
+
+    def update_ticket_status(self, ticket_number: str, status: str):
+        """Update ticket status"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            UPDATE support_tickets 
+            SET status = ?, updated_at = CURRENT_TIMESTAMP 
+            WHERE ticket_number = ?
+        """, (status, ticket_number))
+
+        conn.commit()
+        conn.close()
