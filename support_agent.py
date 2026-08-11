@@ -138,3 +138,7 @@ class SupportTicketDatabase:
 
         conn.commit()
         conn.close()
+
+
+class VectorRAGClassifier:
+    """Vector-based query classifier using ChromaDB for RAG"""
