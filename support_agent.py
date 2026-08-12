@@ -142,3 +142,19 @@ class SupportTicketDatabase:
 
 class VectorRAGClassifier:
     """Vector-based query classifier using ChromaDB for RAG"""
+
+    def __init__(self):
+        # Initialize ChromaDB with persistent storage
+        chroma_path = "./support_vectors"
+        os.makedirs(chroma_path, exist_ok=True)
+
+        self.client = chromadb.PersistentClient(
+            path=chroma_path,
+            settings=Settings(anonymized_telemetry=False),
+        )
+        self.collection = self.client.get_or_create_collection(
+            name="support_queries",
+            metadata={"hnsw:space": "cosine"}
+        )
+
+        self.init_vectors()
