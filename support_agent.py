@@ -158,3 +158,14 @@ class VectorRAGClassifier:
         )
 
         self.init_vectors()
+
+    def init_vectors(self):
+        """Initialize vectors with support categories and examples"""
+        if self.collection.count() == 0:
+            for category, keywords in SUPPORT_CATEGORIES.items():
+                for idx, keyword in enumerate(keywords):
+                    self.collection.add(
+                        ids=[f"{category}_{idx}"],
+                        metadatas=[{"category": category}],
+                        documents=[keyword]
+                    )
