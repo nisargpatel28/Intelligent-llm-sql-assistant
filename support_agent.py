@@ -169,3 +169,18 @@ class VectorRAGClassifier:
                         metadatas=[{"category": category}],
                         documents=[keyword]
                     )
+
+    def mark_email_sent(self, ticket_number: str):
+        """Mark ticket as having email sent"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            UPDATE support_tickets 
+            SET email_sent = 1, email_sent_at = CURRENT_TIMESTAMP
+            WHERE ticket_number = ?
+        """, (ticket_number,))
+
+        conn.commit()
+        conn.close()
+
