@@ -184,3 +184,40 @@ class VectorRAGClassifier:
         conn.commit()
         conn.close()
 
+
+class VectorRAGClassifier:
+    """Vector-based query classifier using ChromaDB for RAG"""
+
+    def __init__(self):
+        # Initialize ChromaDB with persistent storage
+        chroma_path = "./support_vectors"
+        os.makedirs(chroma_path, exist_ok=True)
+
+        self.client = chromadb.PersistentClient(
+            path=chroma_path,
+            settings=Settings(anonymized_telemetry=False),
+        )
+        self.collection = self.client.get_or_create_collection(
+            name="support_queries",
+            metadata={"hnsw:space": "cosine"}
+        )
+
+        self.init_vectors()
+
+    def classify_query(self, query: str, top_k: int = 1) -> Tuple[str, float]:
+        """Classify query to determine support category"""
+        results = self.collection.query(
+            query_texts=[query],
+            n_results=top_k
+        )
+
+        if results['metadatas'] and len(results['metadatas']) > 0:
+            category = results['metadatas'][0][0]['category']
+            distance = results['distances'][0][0]
+            # Convert distance to similarity score (0-1)
+            similarity = max(0, 1 - distance)
+            return category, similarity
+
+        return "general", 0.0
+
+
