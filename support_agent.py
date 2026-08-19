@@ -231,4 +231,50 @@ class SupportEmailNotifier:
         self.sender_password = os.getenv("SUPPORT_EMAIL_PASSWORD")
         self.support_team_email = os.getenv("SUPPORT_TEAM_EMAIL")
 
+    def send_ticket_notification(self, ticket: Dict) -> bool:
+        """Send email notification to support team about new ticket"""
+        try:
+            if not self.sender_email or not self.support_team_email:
+                print(
+                    "⚠️ Email credentials not configured. Ticket created but email not sent.")
+                return False
+
+            msg = MIMEMultipart()
+            msg['From'] = self.sender_email
+            msg['To'] = self.support_team_email
+            msg['Subject'] = f"New Support Ticket: {ticket['ticket_number']} - {ticket['category'].upper()}"
+
+            body = f"""
+New Support Ticket Created
+
+Ticket Number: {ticket['ticket_number']}
+Category: {ticket['category']}
+Priority: {ticket['priority']}
+Created: {ticket['created_at']}
+
+Customer Email: {ticket['user_email']}
+
+Customer Query:
+{ticket['user_query']}
+
+---
+Please log in to the dashboard to review and respond to this ticket.
+            """
+
+            msg.attach(MIMEText(body, 'plain'))
+
+            server = smtplib.SMTP(self.smtp_server, self.smtp_port)
+            server.starttls()
+            server.login(self.sender_email, self.sender_password)
+            server.send_message(msg)
+            server.quit()
+
+            print(
+                f"✅ Email notification sent for ticket {ticket['ticket_number']}")
+            return True
+
+        except Exception as e:
+            print(f"❌ Error sending email: {str(e)}")
+            return False
+
 
