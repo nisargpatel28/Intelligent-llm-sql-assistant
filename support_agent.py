@@ -277,4 +277,45 @@ Please log in to the dashboard to review and respond to this ticket.
             print(f"❌ Error sending email: {str(e)}")
             return False
 
+    def send_customer_confirmation(self, ticket: Dict) -> bool:
+        """Send confirmation email to customer"""
+        try:
+            if not self.sender_email:
+                return False
+
+            msg = MIMEMultipart()
+            msg['From'] = self.sender_email
+            msg['To'] = ticket['user_email']
+            msg['Subject'] = f"Support Ticket Created: {ticket['ticket_number']}"
+
+            body = f"""
+Dear Customer,
+
+Thank you for contacting us. Your support ticket has been created and assigned to our team.
+
+Ticket Number: {ticket['ticket_number']}
+Category: {ticket['category']}
+Status: Open
+
+Your query has been marked as {ticket['priority']} priority and will be addressed shortly.
+Our support team will reach out to you within 24 hours.
+
+Best regards,
+FinTech Support Team
+            """
+
+            msg.attach(MIMEText(body, 'plain'))
+
+            server = smtplib.SMTP(self.smtp_server, self.smtp_port)
+            server.starttls()
+            server.login(self.sender_email, self.sender_password)
+            server.send_message(msg)
+            server.quit()
+
+            return True
+
+        except Exception as e:
+            print(f"❌ Error sending confirmation email: {str(e)}")
+            return False
+
 
