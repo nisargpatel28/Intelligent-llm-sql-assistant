@@ -319,3 +319,13 @@ FinTech Support Team
             return False
 
 
+class SupportAgent:
+    """Main agent that orchestrates query routing and ticket creation"""
+
+    def __init__(self):
+        self.classifier = VectorRAGClassifier()
+        self.db = SupportTicketDatabase()
+        self.emailer = SupportEmailNotifier()
+        self.support_categories_set = set(SUPPORT_CATEGORIES.keys())
+
+
