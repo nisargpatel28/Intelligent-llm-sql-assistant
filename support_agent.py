@@ -328,4 +328,46 @@ class SupportAgent:
         self.emailer = SupportEmailNotifier()
         self.support_categories_set = set(SUPPORT_CATEGORIES.keys())
 
+    def analyze_query(self, user_query: str) -> Tuple[str, float]:
+        """Analyze user query to determine if it needs support routing"""
+        try:
+            model = genai.GenerativeModel('gemini-pro')
+
+            analysis_prompt = f"""
+Analyze this customer query and determine if it requires support team assistance.
+
+Categories that ALWAYS need support routing:
+- Bank account issues (balance, statements, verification, closure, settings)
+- Debit/Credit card issues (blocked, fraud, replacement, limits, PIN)
+- Cross-border transactions (international transfers, forex, SWIFT)
+- KYC/Identity verification issues
+
+Query: "{user_query}"
+
+Respond ONLY with a JSON object:
+{{
+    "needs_support": true/false,
+    "category": "bank_account|debit_card|cross_border|kyc|general",
+    "confidence": 0.0-1.0,
+    "reason": "brief explanation"
+}}
+            """
+
+            response = model.generate_content(analysis_prompt)
+
+            # Parse JSON response
+            response_text = response.text.strip()
+            # Remove markdown code blocks if present
+            if response_text.startswith("```"):
+                response_text = response_text.split("```")[1]
+                if response_text.startswith("json"):
+                    response_text = response_text[4:]
+
+            result = json.loads(response_text)
+            return result.get("category", "general"), result.get("confidence", 0.0)
+
+        except Exception as e:
+            print(f"Error in query analysis: {str(e)}")
+            return "general", 0.0
+
 
