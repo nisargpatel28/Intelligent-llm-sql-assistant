@@ -370,4 +370,17 @@ Respond ONLY with a JSON object:
             print(f"Error in query analysis: {str(e)}")
             return "general", 0.0
 
+    def should_route_to_support(self, user_query: str, category: str, confidence: float) -> bool:
+        """Determine if query should be routed to support"""
+        support_threshold = 0.5
+
+        # Always route if category is one of the predefined categories
+        if category in self.support_categories_set and confidence > support_threshold:
+            return True
+
+        # Use vector classifier as backup
+        vec_category, vec_confidence = self.classifier.classify_query(
+            user_query)
+        return vec_category in self.support_categories_set and vec_confidence > 0.3
+
 
