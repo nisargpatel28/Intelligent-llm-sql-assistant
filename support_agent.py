@@ -383,4 +383,80 @@ Respond ONLY with a JSON object:
             user_query)
         return vec_category in self.support_categories_set and vec_confidence > 0.3
 
+    def process_query(self, user_query: str, user_email: str = "customer@example.com") -> Dict:
+        """
+        Process user query and route to support if needed
+
+        Args:
+            user_query: The customer's query
+            user_email: Customer's email address
+
+        Returns:
+            Dictionary with routing decision and ticket info
+        """
+
+        result = {
+            "query": user_query,
+            "routed_to_support": False,
+            "ticket_number": None,
+            "category": "general",
+            "confidence": 0.0,
+            "message": ""
+        }
+
+        # Analyze the query
+        category, confidence = self.analyze_query(user_query)
+        result["category"] = category
+        result["confidence"] = confidence
+
+        # Determine if routing is needed
+        if self.should_route_to_support(user_query, category, confidence):
+            result["routed_to_support"] = True
+
+            # Determine priority based on category
+            priority = "high" if category in [
+                "kyc", "bank_account"] else "medium"
+
+            # Create support ticket
+            ticket_number = self.db.create_ticket(
+                user_email=user_email,
+                user_query=user_query,
+                category=category,
+                priority=priority
+            )
+
+            result["ticket_number"] = ticket_number
+
+            # Get ticket details for email
+            conn = sqlite3.connect(self.db.db_path)
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT * FROM support_tickets WHERE ticket_number = ?", (ticket_number,))
+            row = cursor.fetchone()
+            conn.close()
+
+            if row:
+                ticket_dict = {
+                    "ticket_number": row[1],
+                    "user_email": row[2],
+                    "user_query": row[3],
+                    "category": row[4],
+                    "priority": row[5],
+                    "created_at": row[7]
+                }
+
+                # Send email notifications
+                self.emailer.send_ticket_notification(ticket_dict)
+                self.emailer.send_customer_confirmation(ticket_dict)
+
+                # Mark email as sent
+                self.db.mark_email_sent(ticket_number)
+
+                result["message"] = f"✅ Your query has been escalated to our support team. Ticket #{ticket_number} created. You will receive updates at {user_email}"
+
+        else:
+            result["message"] = "Query handled by AI assistant. If you need further assistance, please contact our support team."
+
+        return result
+
 
