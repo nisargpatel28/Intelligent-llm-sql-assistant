@@ -460,3 +460,11 @@ Respond ONLY with a JSON object:
         return result
 
 
+def get_support_agent() -> SupportAgent:
+    """Get or create support agent instance"""
+    if not hasattr(get_support_agent, 'instance'):
+        get_support_agent.instance = SupportAgent()
+    return get_support_agent.instance
+
+
+
