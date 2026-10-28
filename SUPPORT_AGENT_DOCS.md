@@ -63,8 +63,8 @@ Decision: Route to Support or Handle via AI?
 - updated_at: Last update timestamp
 - assigned_to: Support staff member assigned
 - resolution_notes: Notes on ticket resolution
-- email_sent: Boolean flag (1 = sent, 0 = not sent)
-- email_sent_at: Timestamp of email notification
+- email_sent: Boolean flag (1 = support-team notification sent, 0 = not sent)
+- email_sent_at: Timestamp of the support-team notification
 ```
 
 ## Configuration

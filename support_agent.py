@@ -446,11 +446,12 @@ Respond ONLY with a JSON object:
                 }
 
                 # Send email notifications
-                self.emailer.send_ticket_notification(ticket_dict)
+                support_notification_sent = self.emailer.send_ticket_notification(
+                    ticket_dict)
                 self.emailer.send_customer_confirmation(ticket_dict)
 
-                # Mark email as sent
-                self.db.mark_email_sent(ticket_number)
+                if support_notification_sent:
+                    self.db.mark_email_sent(ticket_number)
 
                 result["message"] = f"✅ Your query has been escalated to our support team. Ticket #{ticket_number} created. You will receive updates at {user_email}"
 
@@ -465,6 +466,5 @@ def get_support_agent() -> SupportAgent:
     if not hasattr(get_support_agent, 'instance'):
         get_support_agent.instance = SupportAgent()
     return get_support_agent.instance
-
 
 
