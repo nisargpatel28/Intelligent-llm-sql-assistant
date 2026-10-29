@@ -159,51 +159,6 @@ class VectorRAGClassifier:
 
         self.init_vectors()
 
-    def init_vectors(self):
-        """Initialize vectors with support categories and examples"""
-        if self.collection.count() == 0:
-            for category, keywords in SUPPORT_CATEGORIES.items():
-                for idx, keyword in enumerate(keywords):
-                    self.collection.add(
-                        ids=[f"{category}_{idx}"],
-                        metadatas=[{"category": category}],
-                        documents=[keyword]
-                    )
-
-    def mark_email_sent(self, ticket_number: str):
-        """Mark ticket as having email sent"""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-
-        cursor.execute("""
-            UPDATE support_tickets 
-            SET email_sent = 1, email_sent_at = CURRENT_TIMESTAMP
-            WHERE ticket_number = ?
-        """, (ticket_number,))
-
-        conn.commit()
-        conn.close()
-
-
-class VectorRAGClassifier:
-    """Vector-based query classifier using ChromaDB for RAG"""
-
-    def __init__(self):
-        # Initialize ChromaDB with persistent storage
-        chroma_path = "./support_vectors"
-        os.makedirs(chroma_path, exist_ok=True)
-
-        self.client = chromadb.PersistentClient(
-            path=chroma_path,
-            settings=Settings(anonymized_telemetry=False),
-        )
-        self.collection = self.client.get_or_create_collection(
-            name="support_queries",
-            metadata={"hnsw:space": "cosine"}
-        )
-
-        self.init_vectors()
-
     def classify_query(self, query: str, top_k: int = 1) -> Tuple[str, float]:
         """Classify query to determine support category"""
         results = self.collection.query(
@@ -466,5 +421,3 @@ def get_support_agent() -> SupportAgent:
     if not hasattr(get_support_agent, 'instance'):
         get_support_agent.instance = SupportAgent()
     return get_support_agent.instance
-
-
