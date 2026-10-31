@@ -12,7 +12,7 @@ from email.mime.multipart import MIMEMultipart
 from datetime import datetime
 from dotenv import load_dotenv
 import json
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 import chromadb
 from chromadb.config import Settings
 
@@ -336,18 +336,27 @@ Respond ONLY with a JSON object:
             print(f"Error in query analysis: {str(e)}")
             return "general", 0.0
 
-    def should_route_to_support(self, user_query: str, category: str, confidence: float) -> bool:
-        """Determine if query should be routed to support"""
+    def _get_routing_classification(
+        self, user_query: str, category: str, confidence: float
+    ) -> Optional[Tuple[str, float]]:
+        """Return the support classification used to route a query, if any."""
         support_threshold = 0.5
 
-        # Always route if category is one of the predefined categories
         if category in self.support_categories_set and confidence > support_threshold:
-            return True
+            return category, confidence
 
-        # Use vector classifier as backup
         vec_category, vec_confidence = self.classifier.classify_query(
             user_query)
-        return vec_category in self.support_categories_set and vec_confidence > 0.3
+        if vec_category in self.support_categories_set and vec_confidence > 0.3:
+            return vec_category, vec_confidence
+
+        return None
+
+    def should_route_to_support(self, user_query: str, category: str, confidence: float) -> bool:
+        """Determine if query should be routed to support"""
+        return self._get_routing_classification(
+            user_query, category, confidence
+        ) is not None
 
     def process_query(self, user_query: str, user_email: str = "customer@example.com") -> Dict:
         """
@@ -376,7 +385,13 @@ Respond ONLY with a JSON object:
         result["confidence"] = confidence
 
         # Determine if routing is needed
-        if self.should_route_to_support(user_query, category, confidence):
+        routing_classification = self._get_routing_classification(
+            user_query, category, confidence
+        )
+        if routing_classification is not None:
+            category, confidence = routing_classification
+            result["category"] = category
+            result["confidence"] = confidence
             result["routed_to_support"] = True
 
             # Determine priority based on category
