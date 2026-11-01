@@ -12,6 +12,7 @@ from email.mime.multipart import MIMEMultipart
 from datetime import datetime
 from dotenv import load_dotenv
 import json
+import uuid
 from typing import Dict, List, Optional, Tuple
 import chromadb
 from chromadb.config import Settings
@@ -99,7 +100,9 @@ class SupportTicketDatabase:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        ticket_number = f"TKT-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        ticket_number = (
+            f"TKT-{datetime.now().strftime('%Y%m%d%H%M%S')}-{uuid.uuid4().hex}"
+        )
 
         cursor.execute("""
             INSERT INTO support_tickets (ticket_number, user_email, user_query, category, priority)
