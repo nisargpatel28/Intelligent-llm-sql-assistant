@@ -19,7 +19,7 @@ The system analyzes incoming queries and classifies them into predefined categor
 - **KYC/Identity Verification**: Document verification, compliance checks
 
 ### 2. Automatic Ticket Creation
-- Creates unique ticket numbers with timestamp (e.g., `TKT-20240627143022`)
+- Creates unique ticket numbers with a timestamp and UUID (e.g., `TKT-20240627143022-550e8400e29b41d4a716446655440000`)
 - Stores ticket details in SQLite database
 - Tracks ticket status, priority, and creation time
 
@@ -53,7 +53,7 @@ Decision: Route to Support or Handle via AI?
 ### support_tickets table
 ```
 - id: Auto-increment primary key
-- ticket_number: Unique ticket identifier (TKT-YYYYMMDDHHMMSS)
+- ticket_number: Unique ticket identifier (TKT-YYYYMMDDHHMMSS-<UUID>)
 - user_email: Customer email address
 - user_query: Original customer query
 - category: Classification category
@@ -110,7 +110,7 @@ result = support_agent.process_query(
 {
     "query": "My debit card was blocked",
     "routed_to_support": True,
-    "ticket_number": "TKT-20240627143022",
+    "ticket_number": "TKT-20240627143022-550e8400e29b41d4a716446655440000",
     "category": "debit_card",
     "confidence": 0.92,
     "message": "✅ Your query has been escalated..."

@@ -67,7 +67,7 @@ The AI analyzes your query against 4 support categories:
 
 ### Automatic Actions on Support Routing
 
-1. ✅ **Ticket Creation**: Unique ticket number assigned (TKT-YYYYMMDDHHMMSS)
+1. ✅ **Ticket Creation**: Unique ticket number assigned (TKT-YYYYMMDDHHMMSS-<UUID>)
 2. 📧 **Email Notifications**: 
    - Support team gets ticket details
    - Customer gets confirmation email
