@@ -200,12 +200,16 @@ class SupportEmailNotifier:
         self.sender_password = os.getenv("SUPPORT_EMAIL_PASSWORD")
         self.support_team_email = os.getenv("SUPPORT_TEAM_EMAIL")
 
+    def _has_smtp_credentials(self) -> bool:
+        return bool(self.sender_email and self.sender_password)
+
     def send_ticket_notification(self, ticket: Dict) -> bool:
         """Send email notification to support team about new ticket"""
         try:
-            if not self.sender_email or not self.support_team_email:
+            if not self._has_smtp_credentials() or not self.support_team_email:
                 print(
-                    "⚠️ Email credentials not configured. Ticket created but email not sent.")
+                    "⚠️ SMTP credentials or support team email are not configured. "
+                    "Ticket created but email not sent.")
                 return False
 
             msg = MIMEMultipart()
@@ -249,7 +253,9 @@ Please log in to the dashboard to review and respond to this ticket.
     def send_customer_confirmation(self, ticket: Dict) -> bool:
         """Send confirmation email to customer"""
         try:
-            if not self.sender_email:
+            if not self._has_smtp_credentials():
+                print(
+                    "⚠️ SMTP credentials not configured. Confirmation email not sent.")
                 return False
 
             msg = MIMEMultipart()

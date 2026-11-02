@@ -181,9 +181,9 @@ The app provides support statistics:
 
 ### Email Not Configured
 ```
-⚠️ Email credentials not configured. Ticket created but email not sent.
+⚠️ SMTP credentials or support team email are not configured. Ticket created but email not sent.
 ```
-Tickets are still created and stored in the database, but email notifications won't be sent.
+Tickets are still created and stored in the database, but email notifications won't be sent. Both `SUPPORT_EMAIL` and `SUPPORT_EMAIL_PASSWORD` must be set to send email.
 
 ### API Quota Exceeded
 Handled gracefully with user-friendly error messages directing to API quotas.
