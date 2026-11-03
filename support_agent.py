@@ -236,11 +236,10 @@ Please log in to the dashboard to review and respond to this ticket.
 
             msg.attach(MIMEText(body, 'plain'))
 
-            server = smtplib.SMTP(self.smtp_server, self.smtp_port)
-            server.starttls()
-            server.login(self.sender_email, self.sender_password)
-            server.send_message(msg)
-            server.quit()
+            with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
+                server.starttls()
+                server.login(self.sender_email, self.sender_password)
+                server.send_message(msg)
 
             print(
                 f"✅ Email notification sent for ticket {ticket['ticket_number']}")
@@ -281,11 +280,10 @@ FinTech Support Team
 
             msg.attach(MIMEText(body, 'plain'))
 
-            server = smtplib.SMTP(self.smtp_server, self.smtp_port)
-            server.starttls()
-            server.login(self.sender_email, self.sender_password)
-            server.send_message(msg)
-            server.quit()
+            with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
+                server.starttls()
+                server.login(self.sender_email, self.sender_password)
+                server.send_message(msg)
 
             return True
 
