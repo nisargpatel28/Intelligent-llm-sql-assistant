@@ -534,6 +534,30 @@ with tab2:
                 except Exception as e:
                     st.error(f"Error processing query: {str(e)}")
 
+    with st.expander("🔎 Check an Existing Ticket"):
+        ticket_number = st.text_input(
+            "Ticket Number:", placeholder="TKT-20240627143022-...")
+        ticket_email = st.text_input(
+            "Email used to create the ticket:", placeholder="customer@example.com")
+
+        if st.button("Check Ticket Status", key="ticket_status_lookup"):
+            if not ticket_number or not ticket_email:
+                st.error("Please provide both your ticket number and email address.")
+            else:
+                ticket = support_agent.db.get_ticket_details(
+                    ticket_number.strip(), ticket_email.strip())
+                if ticket is None:
+                    st.warning(
+                        "No ticket was found for that ticket number and email address.")
+                else:
+                    st.success("Ticket found")
+                    st.markdown(f"""
+                    - **Status:** {ticket['status'].replace('_', ' ').title()}
+                    - **Category:** {ticket['category'].replace('_', ' ').title()}
+                    - **Priority:** {ticket['priority'].title()}
+                    - **Created:** {ticket['created_at']}
+                    """)
+
     # Show support statistics
     st.divider()
     st.subheader("📈 Support Statistics")

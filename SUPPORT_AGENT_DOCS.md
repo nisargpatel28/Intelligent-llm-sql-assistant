@@ -33,6 +33,11 @@ The system analyzes incoming queries and classifies them into predefined categor
 - Implements HNSW (Hierarchical Navigable Small World) algorithm
 - Provides confidence scores for classifications
 
+### 5. Ticket Status Lookup
+- Customers can look up a ticket's status using its ticket number and the email address used to create it
+- Only status, category, priority, and creation time are displayed
+- Ticket numbers are matched together with the email address to avoid exposing another customer's ticket
+
 ## Architecture
 
 ```
@@ -131,6 +136,10 @@ result = agent.process_query(
 print(f"Ticket: {result['ticket_number']}")
 print(f"Routed to Support: {result['routed_to_support']}")
 ```
+
+Customers can also look up a ticket from the **Check an Existing Ticket** section
+of the Support Routing tab by entering their ticket number and the email address
+used to create it.
 
 ## How It Works
 
