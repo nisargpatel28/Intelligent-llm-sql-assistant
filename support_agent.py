@@ -142,6 +142,33 @@ class SupportTicketDatabase:
         conn.commit()
         conn.close()
 
+    def get_ticket_details(
+        self, ticket_number: str, user_email: str
+    ) -> Optional[Dict[str, str]]:
+        """Return a ticket's public details when its owner email matches."""
+        conn = sqlite3.connect(self.db_path)
+        try:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT ticket_number, category, priority, status, created_at
+                FROM support_tickets
+                WHERE ticket_number = ? AND lower(user_email) = lower(?)
+            """, (ticket_number, user_email))
+            row = cursor.fetchone()
+        finally:
+            conn.close()
+
+        if row is None:
+            return None
+
+        return {
+            "ticket_number": row[0],
+            "category": row[1],
+            "priority": row[2],
+            "status": row[3],
+            "created_at": row[4],
+        }
+
 
 class VectorRAGClassifier:
     """Vector-based query classifier using ChromaDB for RAG"""
@@ -236,11 +263,10 @@ Please log in to the dashboard to review and respond to this ticket.
 
             msg.attach(MIMEText(body, 'plain'))
 
-            server = smtplib.SMTP(self.smtp_server, self.smtp_port)
-            server.starttls()
-            server.login(self.sender_email, self.sender_password)
-            server.send_message(msg)
-            server.quit()
+            with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
+                server.starttls()
+                server.login(self.sender_email, self.sender_password)
+                server.send_message(msg)
 
             print(
                 f"✅ Email notification sent for ticket {ticket['ticket_number']}")
@@ -281,11 +307,10 @@ FinTech Support Team
 
             msg.attach(MIMEText(body, 'plain'))
 
-            server = smtplib.SMTP(self.smtp_server, self.smtp_port)
-            server.starttls()
-            server.login(self.sender_email, self.sender_password)
-            server.send_message(msg)
-            server.quit()
+            with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
+                server.starttls()
+                server.login(self.sender_email, self.sender_password)
+                server.send_message(msg)
 
             return True
 
