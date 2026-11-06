@@ -556,6 +556,7 @@ with tab2:
                     - **Category:** {ticket['category'].replace('_', ' ').title()}
                     - **Priority:** {ticket['priority'].title()}
                     - **Created:** {ticket['created_at']}
+                    - **Last updated:** {ticket['updated_at']}
                     """)
 
     # Show support statistics

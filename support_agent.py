@@ -159,7 +159,7 @@ class SupportTicketDatabase:
         try:
             cursor = conn.cursor()
             cursor.execute("""
-                SELECT ticket_number, category, priority, status, created_at
+                SELECT ticket_number, category, priority, status, created_at, updated_at
                 FROM support_tickets
                 WHERE ticket_number = ? AND lower(user_email) = lower(?)
             """, (ticket_number, user_email))
@@ -176,6 +176,7 @@ class SupportTicketDatabase:
             "priority": row[2],
             "status": row[3],
             "created_at": row[4],
+            "updated_at": row[5],
         }
 
 
