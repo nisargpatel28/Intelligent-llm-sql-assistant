@@ -61,6 +61,8 @@ SUPPORT_CATEGORIES = {
     ]
 }
 
+VALID_TICKET_STATUSES = {"open", "in_progress", "resolved", "closed"}
+
 
 class SupportTicketDatabase:
     """Manages support tickets in SQLite database"""
@@ -116,6 +118,13 @@ class SupportTicketDatabase:
 
     def update_ticket_status(self, ticket_number: str, status: str):
         """Update ticket status"""
+        if status not in VALID_TICKET_STATUSES:
+            valid_statuses = ", ".join(sorted(VALID_TICKET_STATUSES))
+            raise ValueError(
+                f"Invalid ticket status '{status}'. "
+                f"Expected one of: {valid_statuses}"
+            )
+
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
