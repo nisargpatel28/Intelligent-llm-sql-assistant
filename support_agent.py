@@ -338,6 +338,25 @@ class SupportAgent:
         self.emailer = SupportEmailNotifier()
         self.support_categories_set = set(SUPPORT_CATEGORIES.keys())
 
+    @staticmethod
+    def _get_ticket_priority(category: str, user_query: str) -> str:
+        """Prioritize account and KYC issues, and urgent card security reports."""
+        if category in {"kyc", "bank_account"}:
+            return "high"
+
+        urgent_card_terms = (
+            "fraud",
+            "unauthorized",
+            "stolen",
+            "unrecognized transaction",
+        )
+        if category == "debit_card" and any(
+            term in user_query.casefold() for term in urgent_card_terms
+        ):
+            return "high"
+
+        return "medium"
+
     def analyze_query(self, user_query: str) -> Tuple[str, float]:
         """Analyze user query to determine if it needs support routing"""
         try:
@@ -438,9 +457,7 @@ Respond ONLY with a JSON object:
             result["confidence"] = confidence
             result["routed_to_support"] = True
 
-            # Determine priority based on category
-            priority = "high" if category in [
-                "kyc", "bank_account"] else "medium"
+            priority = self._get_ticket_priority(category, user_query)
 
             # Create support ticket
             ticket_number = self.db.create_ticket(
