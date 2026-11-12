@@ -350,6 +350,13 @@ class SupportAgent:
             "stolen",
             "compromised",
             "unrecognized transaction",
+            "lost card",
+            "card is lost",
+            "card was lost",
+            "card lost",
+            "lost my card",
+            "lost my debit card",
+            "lost my credit card",
         )
         if category == "debit_card" and any(
             term in user_query.casefold() for term in urgent_card_terms

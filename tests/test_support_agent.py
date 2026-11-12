@@ -73,6 +73,9 @@ def test_update_ticket_status_accepts_supported_status(tmp_path):
         "My debit card was stolen",
         "I think my card details were compromised",
         "There is an unrecognized transaction on my card",
+        "I lost my card",
+        "My debit card was lost",
+        "My card is lost",
     ],
 )
 def test_debit_card_security_reports_are_high_priority(query):
