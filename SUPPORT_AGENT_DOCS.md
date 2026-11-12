@@ -22,7 +22,7 @@ The system analyzes incoming queries and classifies them into predefined categor
 - Creates unique ticket numbers with a timestamp and UUID (e.g., `TKT-20240627143022-550e8400e29b41d4a716446655440000`)
 - Stores ticket details in SQLite database
 - Tracks ticket status, priority, and creation time
-- Marks debit-card fraud, unauthorized-payment, stolen-card, and unrecognized-transaction reports as high priority
+- Marks debit-card fraud, unauthorized-payment, stolen-card, compromised-card, and unrecognized-transaction reports as high priority
 - Accepts only the supported ticket statuses: `open`, `in_progress`, `resolved`, and `closed`
 
 ### 3. Email Notifications

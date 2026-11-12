@@ -348,6 +348,7 @@ class SupportAgent:
             "fraud",
             "unauthorized",
             "stolen",
+            "compromised",
             "unrecognized transaction",
         )
         if category == "debit_card" and any(

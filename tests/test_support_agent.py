@@ -71,6 +71,7 @@ def test_update_ticket_status_accepts_supported_status(tmp_path):
         "I think there is fraud on my card",
         "I did not make this unauthorized payment",
         "My debit card was stolen",
+        "I think my card details were compromised",
         "There is an unrecognized transaction on my card",
     ],
 )
