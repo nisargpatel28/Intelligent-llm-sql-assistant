@@ -23,6 +23,7 @@ The system analyzes incoming queries and classifies them into predefined categor
 - Stores ticket details in SQLite database
 - Tracks ticket status, priority, and creation time
 - Marks debit-card fraud, unauthorized-payment, lost or stolen card, compromised-card, and unrecognized-transaction reports as high priority
+- Marks suspicious cross-border transfers reported as fraud, scams, or unauthorized transfers as high priority
 - Accepts only the supported ticket statuses: `open`, `in_progress`, `resolved`, and `closed`
 
 ### 3. Email Notifications

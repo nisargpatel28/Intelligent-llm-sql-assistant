@@ -363,6 +363,17 @@ class SupportAgent:
         ):
             return "high"
 
+        urgent_transfer_terms = (
+            "fraud",
+            "scam",
+            "unauthorized",
+            "unrecognized transfer",
+        )
+        if category == "cross_border" and any(
+            term in user_query.casefold() for term in urgent_transfer_terms
+        ):
+            return "high"
+
         return "medium"
 
     def analyze_query(self, user_query: str) -> Tuple[str, float]:

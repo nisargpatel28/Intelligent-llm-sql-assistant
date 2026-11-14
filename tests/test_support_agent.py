@@ -91,3 +91,21 @@ def test_non_security_debit_card_issue_remains_medium_priority():
 @pytest.mark.parametrize("category", ["kyc", "bank_account"])
 def test_existing_high_priority_categories_remain_high(category):
     assert SupportAgent._get_ticket_priority(category, "Need assistance") == "high"
+
+
+@pytest.mark.parametrize(
+    "query",
+    [
+        "I see an unauthorized international transfer",
+        "I think this wire transfer is a scam",
+        "There is an unrecognized transfer on my account",
+    ],
+)
+def test_suspicious_cross_border_transfers_are_high_priority(query):
+    assert SupportAgent._get_ticket_priority("cross_border", query) == "high"
+
+
+def test_regular_cross_border_transfer_remains_medium_priority():
+    assert SupportAgent._get_ticket_priority(
+        "cross_border", "How long does my international transfer take?"
+    ) == "medium"
