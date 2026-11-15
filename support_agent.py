@@ -344,6 +344,7 @@ class SupportAgent:
         if category in {"kyc", "bank_account"}:
             return "high"
 
+        normalized_query = user_query.casefold()
         urgent_card_terms = (
             "fraud",
             "unauthorized",
@@ -359,7 +360,7 @@ class SupportAgent:
             "lost my credit card",
         )
         if category == "debit_card" and any(
-            term in user_query.casefold() for term in urgent_card_terms
+            term in normalized_query for term in urgent_card_terms
         ):
             return "high"
 
@@ -370,7 +371,7 @@ class SupportAgent:
             "unrecognized transfer",
         )
         if category == "cross_border" and any(
-            term in user_query.casefold() for term in urgent_transfer_terms
+            term in normalized_query for term in urgent_transfer_terms
         ):
             return "high"
 
