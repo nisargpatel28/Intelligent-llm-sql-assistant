@@ -76,6 +76,10 @@ def test_update_ticket_status_accepts_supported_status(tmp_path):
         "I lost my card",
         "My debit card was lost",
         "My card is lost",
+        "I entered my card details on a phishing site",
+        "I think someone used a card skimmer",
+        "Someone took over my account",
+        "There may be identity theft on my account",
     ],
 )
 def test_debit_card_security_reports_are_high_priority(query):

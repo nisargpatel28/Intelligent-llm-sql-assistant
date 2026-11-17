@@ -358,6 +358,12 @@ class SupportAgent:
             "lost my card",
             "lost my debit card",
             "lost my credit card",
+            "phishing",
+            "card skimming",
+            "card skimmer",
+            "account takeover",
+            "took over my account",
+            "identity theft",
         )
         if category == "debit_card" and any(
             term in normalized_query for term in urgent_card_terms
