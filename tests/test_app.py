@@ -59,6 +59,29 @@ def test_read_sql_query_with_params_and_introspect_schema():
         assert rows == [(123.45,)]
 
 
+def test_read_sql_query_closes_connection_when_execution_fails(monkeypatch):
+    class FailingCursor:
+        def execute(self, sql, params=None):
+            raise sqlite3.OperationalError("query failed")
+
+    class TrackedConnection:
+        closed = False
+
+        def cursor(self):
+            return FailingCursor()
+
+        def close(self):
+            self.closed = True
+
+    connection = TrackedConnection()
+    monkeypatch.setattr(app.sqlite3, "connect", lambda db: connection)
+
+    with pytest.raises(sqlite3.OperationalError, match="query failed"):
+        app.read_sql_query("SELECT value FROM items", "unused.db")
+
+    assert connection.closed
+
+
 def test_format_results_to_text_fallback_when_no_genai():
     # Simulate no SDK by temporarily patching app.genai
     original_genai = app.genai

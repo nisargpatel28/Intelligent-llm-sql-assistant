@@ -257,15 +257,17 @@ def read_sql_query(sql: str, db: str) -> Tuple[bool, List, Optional[str]]:
 
 def read_sql_query(sql, db, params=None):
     conn = sqlite3.connect(db)
-    cursor = conn.cursor()
-    if params:
-        cursor.execute(sql, params)
-    else:
-        cursor.execute(sql)
-    rows = cursor.fetchall()
-    conn.commit()
-    conn.close()
-    return rows
+    try:
+        cursor = conn.cursor()
+        if params:
+            cursor.execute(sql, params)
+        else:
+            cursor.execute(sql)
+        rows = cursor.fetchall()
+        conn.commit()
+        return rows
+    finally:
+        conn.close()
 
 
 def introspect_schema(db, table='fintech'):
