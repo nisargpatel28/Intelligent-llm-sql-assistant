@@ -524,7 +524,7 @@ with tab2:
                         with st.expander("📋 View Ticket Details"):
                             st.markdown(f"""
                             - **Category:** {result['category'].replace('_', ' ').title()}
-                            - **Priority:** High
+                            - **Priority:** {result['priority'].title()}
                             - **Status:** Open
                             - **Created:** {st.session_state.get('ticket_time', 'Just now')}
                             """)

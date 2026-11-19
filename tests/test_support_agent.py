@@ -113,3 +113,34 @@ def test_regular_cross_border_transfer_remains_medium_priority():
     assert SupportAgent._get_ticket_priority(
         "cross_border", "How long does my international transfer take?"
     ) == "medium"
+
+
+@pytest.mark.parametrize(
+    ("query", "expected_priority"),
+    [
+        ("My card was declined at checkout", "medium"),
+        ("I lost my debit card", "high"),
+    ],
+)
+def test_process_query_returns_ticket_priority(
+    tmp_path, monkeypatch, query, expected_priority
+):
+    class Emailer:
+        def send_ticket_notification(self, ticket):
+            return False
+
+        def send_customer_confirmation(self, ticket):
+            return False
+
+    agent = SupportAgent.__new__(SupportAgent)
+    agent.support_categories_set = {"debit_card"}
+    agent.db = SupportTicketDatabase(str(tmp_path / "support.db"))
+    agent.emailer = Emailer()
+    monkeypatch.setattr(
+        agent, "analyze_query", lambda user_query: ("debit_card", 0.9)
+    )
+
+    result = agent.process_query(query, "customer@example.com")
+
+    assert result["routed_to_support"] is True
+    assert result["priority"] == expected_priority

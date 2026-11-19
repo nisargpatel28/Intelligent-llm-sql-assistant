@@ -464,6 +464,7 @@ Respond ONLY with a JSON object:
             "routed_to_support": False,
             "ticket_number": None,
             "category": "general",
+            "priority": None,
             "confidence": 0.0,
             "message": ""
         }
@@ -484,6 +485,7 @@ Respond ONLY with a JSON object:
             result["routed_to_support"] = True
 
             priority = self._get_ticket_priority(category, user_query)
+            result["priority"] = priority
 
             # Create support ticket
             ticket_number = self.db.create_ticket(
