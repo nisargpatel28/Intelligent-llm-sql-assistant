@@ -718,10 +718,10 @@ with tab3:
         col1, col2 = st.columns(2)
         with col1:
             start_date = st.date_input(
-                "Start Date (optional)", key="report_start_date")
+                "Start Date (optional)", value=None, key="report_start_date")
         with col2:
             end_date = st.date_input(
-                "End Date (optional)", key="report_end_date")
+                "End Date (optional)", value=None, key="report_end_date")
 
         filters = {}
         if start_date:
