@@ -177,6 +177,9 @@ def get_gemini_response(question, prompt):
 
 
 def format_results_to_text(question, sql_results):
+    if not sql_results:
+        return "No results were found for your query."
+
     if not genai:
         return f"Auto answer fallback: {question} (no Gemini SDK available)"
 

@@ -114,3 +114,17 @@ def test_format_results_to_text_fallback_when_no_genai():
         assert 'Auto answer fallback' in result
     finally:
         app.genai = original_genai
+
+
+def test_format_results_to_text_reports_empty_results_without_calling_gemini(
+    monkeypatch,
+):
+    class UnexpectedGeminiCall:
+        def GenerativeModel(self, model_name):
+            raise AssertionError("Gemini should not be called for empty results")
+
+    monkeypatch.setattr(app, "genai", UnexpectedGeminiCall())
+
+    result = app.format_results_to_text("Find missing records", [])
+
+    assert result == "No results were found for your query."
