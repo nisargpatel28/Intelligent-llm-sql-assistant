@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 import re
 import signal
 from contextlib import contextmanager
+from datetime import date
 from typing import Optional, List, Tuple
 from support_agent import get_support_agent
 
@@ -331,6 +332,13 @@ def format_conversation_history(history):
         speaker = "User" if msg["role"] == "user" else "Assistant"
         lines.append(f"    {speaker}: {msg['content']}")
     return "\n".join(lines)
+
+
+def _validate_report_date_range(
+    start_date: Optional[date], end_date: Optional[date]
+) -> None:
+    if start_date and end_date and start_date > end_date:
+        raise ValueError("Start date must be on or before end date.")
 
 
 def build_prompt(schema_columns, table='fintech', conversation_history=None):
@@ -731,6 +739,8 @@ with tab3:
 
         if st.button("Generate Report", key="generate_report_btn"):
             try:
+                _validate_report_date_range(start_date, end_date)
+
                 # Get data for report
                 data = read_sql_query("SELECT * FROM fintech", 'fintech.db')
 

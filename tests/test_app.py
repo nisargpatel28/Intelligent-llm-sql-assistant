@@ -3,6 +3,7 @@ import os
 import sqlite3
 import sys
 import tempfile
+from datetime import date
 
 import pytest
 
@@ -80,6 +81,28 @@ def test_read_sql_query_closes_connection_when_execution_fails(monkeypatch):
         app.read_sql_query("SELECT value FROM items", "unused.db")
 
     assert connection.closed
+
+
+@pytest.mark.parametrize(
+    ("start_date", "end_date"),
+    [
+        (date(2024, 6, 1), date(2024, 6, 30)),
+        (date(2024, 6, 15), date(2024, 6, 15)),
+        (None, date(2024, 6, 30)),
+        (date(2024, 6, 1), None),
+    ],
+)
+def test_validate_report_date_range_accepts_valid_or_partial_ranges(
+    start_date, end_date
+):
+    app._validate_report_date_range(start_date, end_date)
+
+
+def test_validate_report_date_range_rejects_start_after_end():
+    with pytest.raises(
+        ValueError, match="Start date must be on or before end date"
+    ):
+        app._validate_report_date_range(date(2024, 7, 1), date(2024, 6, 30))
 
 
 def test_format_results_to_text_fallback_when_no_genai():
