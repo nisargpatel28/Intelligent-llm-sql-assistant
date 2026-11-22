@@ -83,16 +83,36 @@ def test_read_sql_query_closes_connection_when_execution_fails(monkeypatch):
         def cursor(self):
             return FailingCursor()
 
+        def set_progress_handler(self, callback, instruction_interval):
+            pass
+
         def close(self):
             self.closed = True
 
     connection = TrackedConnection()
-    monkeypatch.setattr(app.sqlite3, "connect", lambda db: connection)
+    monkeypatch.setattr(
+        app.sqlite3, "connect", lambda db, timeout: connection
+    )
 
     with pytest.raises(sqlite3.OperationalError, match="query failed"):
         app.read_sql_query("SELECT value FROM items", "unused.db")
 
     assert connection.closed
+
+
+def test_read_sql_query_interrupts_long_running_query(monkeypatch, tmp_path):
+    monkeypatch.setattr(app, "QUERY_TIMEOUT_SECONDS", 1)
+    clock_values = iter([10, 12])
+    monkeypatch.setattr(app.time, "monotonic", lambda: next(clock_values))
+
+    query = (
+        "WITH RECURSIVE numbers(value) AS ("
+        "VALUES(0) UNION ALL SELECT value + 1 FROM numbers "
+        "WHERE value < 10000) SELECT sum(value) FROM numbers"
+    )
+
+    with pytest.raises(sqlite3.OperationalError, match="interrupted"):
+        app.read_sql_query(query, str(tmp_path / "timeout.db"))
 
 
 @pytest.mark.parametrize(

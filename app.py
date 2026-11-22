@@ -10,6 +10,7 @@ import streamlit as st
 from dotenv import load_dotenv
 import re
 import signal
+import time
 from contextlib import contextmanager
 from datetime import date
 from typing import Optional, List, Tuple
@@ -260,8 +261,12 @@ def read_sql_query(sql: str, db: str) -> Tuple[bool, List, Optional[str]]:
         return False, [], f"❌ Unexpected error: {str(e)}"
 
 def read_sql_query(sql, db, params=None):
-    conn = sqlite3.connect(db)
+    conn = sqlite3.connect(db, timeout=QUERY_TIMEOUT_SECONDS)
     try:
+        deadline = time.monotonic() + QUERY_TIMEOUT_SECONDS
+        conn.set_progress_handler(
+            lambda: int(time.monotonic() >= deadline), 1000
+        )
         cursor = conn.cursor()
         if params:
             cursor.execute(sql, params)
