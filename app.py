@@ -409,14 +409,8 @@ with tab1:
                 response = get_gemini_response(question, prompt)
                 print("Gemini Pro Response:", response)
 
-                # Extract SQL query from the response (between triple backticks)
-                sql_match = re.search(r'```(.*?)```', response, re.DOTALL)
-                if sql_match:
-                    sql_query = sql_match.group(1).strip()
-                    # Remove 'sql' language identifier if present
-                    sql_query = re.sub(
-                        r'^sql\n', '', sql_query, flags=re.IGNORECASE)
-
+                sql_query = extract_sql_from_response(response)
+                if sql_query:
                     safe_sql = enforce_safe_query(sql_query, {"fintech"}, [
                                                   c.lower() for c in schema_columns])
                     params = [p.strip()

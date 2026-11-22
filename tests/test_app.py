@@ -40,6 +40,18 @@ def test_enforce_safe_query_rejects_bad_column():
                                "fintech"}, {"id", "amount"})
 
 
+@pytest.mark.parametrize(
+    "response",
+    [
+        "```sql\r\nSELECT amount FROM fintech\r\n```",
+        "```SQL\nSELECT amount FROM fintech\n```",
+        "```\nSELECT amount FROM fintech\n```",
+    ],
+)
+def test_extract_sql_from_response_handles_fenced_sql(response):
+    assert app.extract_sql_from_response(response) == "SELECT amount FROM fintech"
+
+
 def test_read_sql_query_with_params_and_introspect_schema():
     with tempfile.TemporaryDirectory() as tmpdir:
         db_path = os.path.join(tmpdir, "test.db")
