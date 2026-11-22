@@ -295,12 +295,17 @@ def introspect_schema(db, table='fintech'):
 def enforce_safe_query(sql_query, allowed_tables, allowed_columns, row_limit=1000):
     normalized = sql_query.strip()
     lowered = normalized.lower()
+    has_trailing_semicolon = normalized.endswith(";")
 
     if not lowered.startswith("select"):
         raise Exception("Only SELECT queries are allowed in this interface.")
 
-    if ";" in normalized and not normalized.rstrip().endswith(";"):
+    if ";" in normalized and not has_trailing_semicolon:
         raise Exception("Unsafe SQL: semicolons are not permitted in queries.")
+
+    if has_trailing_semicolon:
+        normalized = normalized[:-1].rstrip()
+        lowered = normalized.lower()
 
     if re.search(r"\b(drop|delete|update|alter|insert|truncate|replace)\b", normalized, re.IGNORECASE):
         raise Exception("Unsafe SQL: DDL/DML commands are not allowed")
@@ -327,6 +332,9 @@ def enforce_safe_query(sql_query, allowed_tables, allowed_columns, row_limit=100
     # Enforce row cap limit
     if not re.search(r"\blimit\b", lowered):
         normalized += f" LIMIT {row_limit}"
+
+    if has_trailing_semicolon:
+        normalized += ";"
 
     return normalized
 

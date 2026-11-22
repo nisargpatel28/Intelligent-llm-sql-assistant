@@ -16,6 +16,19 @@ def test_enforce_safe_query_adds_limit():
     assert "LIMIT 1000" in safe
 
 
+def test_enforce_safe_query_appends_limit_before_trailing_semicolon():
+    safe = app.enforce_safe_query(
+        "SELECT id FROM fintech;", {"fintech"}, {"id"}
+    )
+    conn = sqlite3.connect(":memory:")
+    try:
+        conn.execute("CREATE TABLE fintech (id INTEGER)")
+        conn.execute("INSERT INTO fintech VALUES (1)")
+        assert conn.execute(safe).fetchall() == [(1,)]
+    finally:
+        conn.close()
+
+
 def test_enforce_safe_query_rejects_non_select():
     with pytest.raises(Exception, match="Only SELECT queries are allowed"):
         app.enforce_safe_query("DELETE FROM fintech", {
