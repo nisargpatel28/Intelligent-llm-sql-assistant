@@ -85,8 +85,11 @@ def validate_sql_query(sql: str) -> Tuple[bool, Optional[str]]:
         if re.search(rf'\b{keyword}\b', sql_upper):
             return False, f"⛔ Query contains forbidden operation: {keyword}. Only SELECT queries are allowed."
     
-    # Check if it's a SELECT query
-    if not sql_upper.startswith('SELECT'):
+    # Check if it starts with a read-only SELECT or WITH...SELECT statement
+    if not (
+        sql_upper.startswith('SELECT')
+        or re.match(r'^WITH\b.*\bSELECT\b', sql_upper, re.DOTALL)
+    ):
         return False, "❌ Only SELECT queries are allowed. No INSERT, UPDATE, DELETE, or DDL operations permitted."
     
     # Check for common SQL injection patterns
@@ -209,58 +212,12 @@ def format_results_to_text(question, sql_results):
 # Function to retrieve data from the sql database with timeout and error handling
 
 
-def read_sql_query(sql: str, db: str) -> Tuple[bool, List, Optional[str]]:
-    """
-    Execute SQL query with timeout protection and comprehensive error handling.
-    Returns: (success, results, error_message)
-    """
-    # Validate query first
+def read_sql_query(sql: str, db: str, params=None) -> List:
+    """Execute a validated SELECT query and return named rows."""
     is_valid, error_msg = validate_sql_query(sql)
     if not is_valid:
-        return False, [], error_msg
-    
-    try:
-        conn = sqlite3.connect(db, timeout=QUERY_TIMEOUT_SECONDS)
-        # Set row factory to return dictionaries
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        
-        # Execute with timeout - use timeout on SQLite connection
-        cursor.execute(f"PRAGMA busy_timeout = {QUERY_TIMEOUT_SECONDS * 1000};")
-        
-        cursor.execute(sql)
-        rows = cursor.fetchall()
-        
-        conn.commit()
-        conn.close()
-        
-        # Check for empty results
-        if not rows:
-            return True, [], None
-        
-        return True, rows, None
-        
-    except sqlite3.OperationalError as e:
-        error_msg = str(e)
-        if "table" in error_msg.lower() and "does not exist" in error_msg.lower():
-            return False, [], f"❌ Table not found. Please check the table name in your query."
-        elif "syntax error" in error_msg.lower():
-            return False, [], f"❌ SQL syntax error: {error_msg}"
-        elif "no such column" in error_msg.lower():
-            return False, [], f"❌ Column not found: {error_msg}"
-        else:
-            return False, [], f"❌ Database error: {error_msg}"
-            
-    except sqlite3.DatabaseError as e:
-        return False, [], f"❌ Database corruption or lock issue: {str(e)}"
-        
-    except TimeoutException as e:
-        return False, [], f"⏱️ Query execution timeout: {str(e)}"
-        
-    except Exception as e:
-        return False, [], f"❌ Unexpected error: {str(e)}"
+        raise ValueError(error_msg)
 
-def read_sql_query(sql, db, params=None):
     conn = sqlite3.connect(db, timeout=QUERY_TIMEOUT_SECONDS)
     try:
         conn.row_factory = sqlite3.Row

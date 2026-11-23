@@ -35,6 +35,15 @@ def test_enforce_safe_query_rejects_non_select():
                                "fintech"}, {"id", "amount"})
 
 
+def test_validate_sql_query_accepts_read_only_cte():
+    is_valid, error = app.validate_sql_query(
+        "WITH amounts AS (SELECT amount FROM fintech) "
+        "SELECT amount FROM amounts"
+    )
+    assert is_valid is True
+    assert error is None
+
+
 def test_enforce_safe_query_rejects_unsafe_statement():
     with pytest.raises(Exception, match="Unsafe SQL: DDL/DML commands are not allowed"):
         app.enforce_safe_query(
@@ -83,6 +92,17 @@ def test_read_sql_query_with_params_and_introspect_schema():
         rows = app.read_sql_query(
             "SELECT amount FROM fintech WHERE status = ?", db_path, params=('Completed',))
         assert rows == [{"amount": 123.45}]
+
+
+def test_read_sql_query_rejects_dml(tmp_path):
+    db_path = str(tmp_path / "support.db")
+    conn = sqlite3.connect(db_path)
+    conn.execute("CREATE TABLE fintech (amount FLOAT)")
+    conn.commit()
+    conn.close()
+
+    with pytest.raises(ValueError, match="Only SELECT queries are allowed"):
+        app.read_sql_query("DELETE FROM fintech", db_path)
 
 
 def test_read_sql_query_closes_connection_when_execution_fails(monkeypatch):
