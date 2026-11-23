@@ -82,7 +82,7 @@ def test_read_sql_query_with_params_and_introspect_schema():
 
         rows = app.read_sql_query(
             "SELECT amount FROM fintech WHERE status = ?", db_path, params=('Completed',))
-        assert rows == [(123.45,)]
+        assert rows == [{"amount": 123.45}]
 
 
 def test_read_sql_query_closes_connection_when_execution_fails(monkeypatch):

@@ -263,6 +263,7 @@ def read_sql_query(sql: str, db: str) -> Tuple[bool, List, Optional[str]]:
 def read_sql_query(sql, db, params=None):
     conn = sqlite3.connect(db, timeout=QUERY_TIMEOUT_SECONDS)
     try:
+        conn.row_factory = sqlite3.Row
         deadline = time.monotonic() + QUERY_TIMEOUT_SECONDS
         conn.set_progress_handler(
             lambda: int(time.monotonic() >= deadline), 1000
@@ -274,7 +275,7 @@ def read_sql_query(sql, db, params=None):
             cursor.execute(sql)
         rows = cursor.fetchall()
         conn.commit()
-        return rows
+        return [dict(row) for row in rows]
     finally:
         conn.close()
 
