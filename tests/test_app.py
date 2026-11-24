@@ -35,6 +35,16 @@ def test_enforce_safe_query_rejects_non_select():
                                "fintech"}, {"id", "amount"})
 
 
+def test_enforce_safe_query_accepts_read_only_cte():
+    safe = app.enforce_safe_query(
+        "WITH totals AS (SELECT SUM(amount) AS total FROM fintech) "
+        "SELECT total FROM totals",
+        {"fintech"},
+        {"amount", "total"},
+    )
+    assert "LIMIT 1000" in safe
+
+
 def test_enforce_safe_query_rejects_unsafe_statement():
     with pytest.raises(Exception, match="Unsafe SQL: DDL/DML commands are not allowed"):
         app.enforce_safe_query(
