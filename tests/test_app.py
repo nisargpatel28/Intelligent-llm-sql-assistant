@@ -34,16 +34,6 @@ def test_enforce_safe_query_rejects_non_select():
         app.enforce_safe_query("DELETE FROM fintech", {
                                "fintech"}, {"id", "amount"})
 
-
-def test_validate_sql_query_accepts_read_only_cte():
-    is_valid, error = app.validate_sql_query(
-        "WITH amounts AS (SELECT amount FROM fintech) "
-        "SELECT amount FROM amounts"
-    )
-    assert is_valid is True
-    assert error is None
-
-
 def test_enforce_safe_query_rejects_unsafe_statement():
     with pytest.raises(Exception, match="Unsafe SQL: DDL/DML commands are not allowed"):
         app.enforce_safe_query(

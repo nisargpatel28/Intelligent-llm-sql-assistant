@@ -255,7 +255,10 @@ def enforce_safe_query(sql_query, allowed_tables, allowed_columns, row_limit=100
     lowered = normalized.lower()
     has_trailing_semicolon = normalized.endswith(";")
 
-    if not lowered.startswith("select"):
+    if not (
+        lowered.startswith("select")
+        or re.match(r'^with\b.*\bselect\b', lowered, re.DOTALL)
+    ):
         raise Exception("Only SELECT queries are allowed in this interface.")
 
     if ";" in normalized and not has_trailing_semicolon:
@@ -268,9 +271,18 @@ def enforce_safe_query(sql_query, allowed_tables, allowed_columns, row_limit=100
     if re.search(r"\b(drop|delete|update|alter|insert|truncate|replace)\b", normalized, re.IGNORECASE):
         raise Exception("Unsafe SQL: DDL/DML commands are not allowed")
 
+    cte_names = set(
+        name.lower()
+        for name in re.findall(
+            r"\b(?:with\s+|,\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s+as\s*\(",
+            normalized,
+            re.IGNORECASE,
+        )
+    )
+
     # Whitelist specific table names
     for table in re.findall(r"\bfrom\s+([a-zA-Z_][a-zA-Z0-9_]*)\b", normalized, re.IGNORECASE):
-        if table.lower() not in allowed_tables:
+        if table.lower() not in allowed_tables and table.lower() not in cte_names:
             raise Exception(f"Table '{table}' is not in the allowed whitelist")
 
     # Validate column names in SELECT (basic check)
