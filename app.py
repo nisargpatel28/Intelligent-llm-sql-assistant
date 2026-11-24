@@ -209,6 +209,13 @@ def format_results_to_text(question, sql_results):
             raise Exception(f"API Error: {error_message}")
 
 
+def format_results_as_json(results_df: pd.DataFrame) -> bytes:
+    """Serialize query results as downloadable JSON records."""
+    return results_df.to_json(
+        orient="records", date_format="iso", indent=2
+    ).encode("utf-8")
+
+
 # Function to retrieve data from the sql database with timeout and error handling
 
 
@@ -426,6 +433,12 @@ with tab1:
                         st.download_button(
                             "Download CSV", csv_bytes,
                             file_name="query_results.csv", mime="text/csv")
+
+                        json_bytes = format_results_as_json(results_df)
+                        st.download_button(
+                            "Download JSON", json_bytes,
+                            file_name="query_results.json",
+                            mime="application/json")
 
                         numeric_cols = results_df.select_dtypes(
                             include='number').columns.tolist()

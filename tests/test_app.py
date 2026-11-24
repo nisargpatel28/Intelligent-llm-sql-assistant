@@ -1,4 +1,5 @@
 import app
+import json
 import os
 import sqlite3
 import sys
@@ -183,3 +184,15 @@ def test_format_results_to_text_reports_empty_results_without_calling_gemini(
     result = app.format_results_to_text("Find missing records", [])
 
     assert result == "No results were found for your query."
+
+
+def test_format_results_as_json_serializes_query_rows():
+    results = app.pd.DataFrame(
+        [{"transaction_id": 7, "amount": 12.5, "status": "Completed"}]
+    )
+
+    serialized = app.format_results_as_json(results)
+
+    assert json.loads(serialized) == [
+        {"transaction_id": 7, "amount": 12.5, "status": "Completed"}
+    ]
