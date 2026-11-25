@@ -427,6 +427,7 @@ with tab1:
 
                     if not results_df.empty:
                         st.subheader("Results")
+                        st.caption(f"{len(results_df):,} rows returned")
                         st.dataframe(results_df)
 
                         csv_bytes = results_df.to_csv(index=False).encode('utf-8')
