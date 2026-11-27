@@ -268,15 +268,33 @@ def enforce_safe_query(sql_query, allowed_tables, allowed_columns, row_limit=100
     ):
         raise Exception("Only SELECT queries are allowed in this interface.")
 
-    if ";" in normalized and not has_trailing_semicolon:
+    if re.search(r"\b(drop|delete|update|alter|insert|truncate|replace)\b", normalized, re.IGNORECASE):
+        raise Exception("Unsafe SQL: DDL/DML commands are not allowed")
+
+    semicolons_outside_strings = []
+    in_string = False
+    index = 0
+    while index < len(normalized):
+        char = normalized[index]
+        if char == "'":
+            if in_string and index + 1 < len(normalized) and normalized[index + 1] == "'":
+                index += 2
+                continue
+            in_string = not in_string
+        elif char == ";" and not in_string:
+            semicolons_outside_strings.append(index)
+        index += 1
+
+    allows_trailing_semicolon = (
+        len(semicolons_outside_strings) == 1
+        and semicolons_outside_strings[0] == len(normalized) - 1
+    )
+    if semicolons_outside_strings and not allows_trailing_semicolon:
         raise Exception("Unsafe SQL: semicolons are not permitted in queries.")
 
     if has_trailing_semicolon:
         normalized = normalized[:-1].rstrip()
         lowered = normalized.lower()
-
-    if re.search(r"\b(drop|delete|update|alter|insert|truncate|replace)\b", normalized, re.IGNORECASE):
-        raise Exception("Unsafe SQL: DDL/DML commands are not allowed")
 
     cte_names = set(
         name.lower()

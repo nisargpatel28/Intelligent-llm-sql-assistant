@@ -30,6 +30,25 @@ def test_enforce_safe_query_appends_limit_before_trailing_semicolon():
         conn.close()
 
 
+def test_enforce_safe_query_allows_semicolon_inside_string():
+    safe = app.enforce_safe_query(
+        "SELECT description FROM fintech "
+        "WHERE description = 'Payment; pending'",
+        {"fintech"},
+        {"description"},
+    )
+    assert "LIMIT 1000" in safe
+
+
+def test_enforce_safe_query_rejects_multiple_statements():
+    with pytest.raises(Exception, match="semicolons are not permitted"):
+        app.enforce_safe_query(
+            "SELECT id FROM fintech; SELECT amount FROM fintech;",
+            {"fintech"},
+            {"id", "amount"},
+        )
+
+
 def test_enforce_safe_query_rejects_non_select():
     with pytest.raises(Exception, match="Only SELECT queries are allowed"):
         app.enforce_safe_query("DELETE FROM fintech", {
