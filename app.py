@@ -70,6 +70,33 @@ def time_limit(seconds: int):
 
 # ============== SECURITY & VALIDATION FUNCTIONS ==============
 
+
+def _sql_parentheses_are_balanced(sql: str) -> bool:
+    depth = 0
+    quote = None
+    index = 0
+
+    while index < len(sql):
+        char = sql[index]
+        if quote:
+            if char == quote:
+                if index + 1 < len(sql) and sql[index + 1] == quote:
+                    index += 2
+                    continue
+                quote = None
+        elif char in ("'", '"'):
+            quote = char
+        elif char == '(':
+            depth += 1
+        elif char == ')':
+            depth -= 1
+            if depth < 0:
+                return False
+        index += 1
+
+    return depth == 0 and quote is None
+
+
 def validate_sql_query(sql: str) -> Tuple[bool, Optional[str]]:
     """
     Validate SQL query for security and syntax issues.
@@ -111,7 +138,7 @@ def validate_sql_query(sql: str) -> Tuple[bool, Optional[str]]:
         return False, "⛔ Access to system tables is restricted for security."
     
     # Validate basic SQL syntax
-    if sql_upper.count('(') != sql_upper.count(')'):
+    if not _sql_parentheses_are_balanced(sql):
         return False, "❌ SQL syntax error: Unmatched parentheses"
     
     return True, None

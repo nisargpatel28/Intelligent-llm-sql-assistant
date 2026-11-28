@@ -72,6 +72,25 @@ def test_enforce_safe_query_rejects_bad_column():
                                "fintech"}, {"id", "amount"})
 
 
+def test_validate_sql_query_ignores_parentheses_inside_string_values():
+    is_valid, error = app.validate_sql_query(
+        "SELECT description FROM fintech "
+        "WHERE description = 'Please call (now'"
+    )
+
+    assert is_valid is True
+    assert error is None
+
+
+def test_validate_sql_query_rejects_unmatched_sql_parenthesis():
+    is_valid, error = app.validate_sql_query(
+        "SELECT (amount FROM fintech"
+    )
+
+    assert is_valid is False
+    assert error == "❌ SQL syntax error: Unmatched parentheses"
+
+
 @pytest.mark.parametrize(
     "response",
     [
